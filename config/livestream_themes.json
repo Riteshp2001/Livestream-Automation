@@ -1,0 +1,110 @@
+{
+    "stream_duration_minutes": 300,
+    "themes": [
+        {
+            "name": "Rainy Night Study Session",
+            "video_queries": ["rain window night", "rainy city night", "rain on window cozy"],
+            "audio_queries": ["rain ambient", "soft rain sounds", "rain on window"],
+            "title": "Rainy Night Study Session | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "cozy study room at night, rain streaking down the window, warm amber desk lamp glow, Studio Ghibli aesthetic"
+        },
+        {
+            "name": "Cozy Coffee Shop Vibes",
+            "video_queries": ["coffee shop cozy", "cafe ambiance", "warm coffee shop interior"],
+            "audio_queries": ["coffee shop ambiance", "cafe background noise", "gentle cafe music"],
+            "title": "Cozy Coffee Shop Vibes | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "warm coffee shop corner, steaming ceramic mug, soft chatter, rainy window view"
+        },
+        {
+            "name": "Midnight City Lights",
+            "video_queries": ["city lights night", "night city skyline", "city rain night"],
+            "audio_queries": ["city night ambient", "urban rain sounds", "distant city traffic"],
+            "title": "Midnight City Lights | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "rooftop overlooking soft city glow, cinematic lighting, neon reflections on wet streets"
+        },
+        {
+            "name": "Forest Cabin Retreat",
+            "video_queries": ["cabin fireplace cozy", "forest cabin rain", "fireplace crackling"],
+            "audio_queries": ["fireplace crackling", "cabin rain sounds", "wood fire ambient"],
+            "title": "Forest Cabin Retreat | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "cozy forest cabin, crackling fireplace, rain pattering on wooden roof, warm blankets"
+        },
+        {
+            "name": "Ocean Waves Study Room",
+            "video_queries": ["ocean waves calm", "sea waves night", "beach waves peaceful"],
+            "audio_queries": ["ocean waves ambient", "calm sea sounds", "gentle waves shore"],
+            "title": "Ocean Waves Study Room | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "beachside study nook, moonlit ocean, gentle waves, warm desk lamp"
+        },
+        {
+            "name": "Snowy Window Evening",
+            "video_queries": ["snow falling window", "snowy night cozy", "winter snow peaceful"],
+            "audio_queries": ["snow wind ambient", "winter wind sounds", "gentle snowstorm"],
+            "title": "Snowy Window Evening | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "frosted window, snowflakes drifting, warm amber glow, hot cocoa, sleeping cat on bookshelf"
+        },
+        {
+            "name": "Sunset Rooftop Chill",
+            "video_queries": ["sunset city rooftop", "golden hour skyline", "sunset clouds peaceful"],
+            "audio_queries": ["sunset ambient", "evening birds sounds", "gentle wind evening"],
+            "title": "Sunset Rooftop Chill | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "golden hour rooftop, warm sunset glow, string lights, peaceful evening sky"
+        },
+        {
+            "name": "Garden Rain Ambiance",
+            "video_queries": ["garden rain", "rainy garden flowers", "rain plants green"],
+            "audio_queries": ["garden rain sounds", "rain on leaves", "gentle rain nature"],
+            "title": "Garden Rain Ambiance | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "lush green garden in rain, droplets on leaves, misty atmosphere, peaceful nature"
+        },
+        {
+            "name": "Starlit Night Study",
+            "video_queries": ["stars night sky", "starry night peaceful", "night sky timelapse"],
+            "audio_queries": ["night crickets ambient", "starry night sounds", "peaceful night ambient"],
+            "title": "Starlit Night Study | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "open window to starlit sky, warm room glow, constellation view, peaceful darkness"
+        },
+        {
+            "name": "Autumn Evening Reading",
+            "video_queries": ["autumn leaves falling", "fall rain cozy", "autumn forest rain"],
+            "audio_queries": ["autumn rain ambient", "leaves rustling wind", "fall rain sounds"],
+            "title": "Autumn Evening Reading | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "autumn leaves outside window, warm amber light, old books, steaming tea, cozy blanket"
+        },
+        {
+            "name": "Japanese Temple Rain",
+            "video_queries": ["japanese garden rain", "zen garden peaceful", "temple rain japan"],
+            "audio_queries": ["zen garden sounds", "japanese rain ambient", "bamboo water fountain"],
+            "title": "Japanese Temple Rain | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "traditional Japanese garden, rain on stone paths, bamboo fountain, zen atmosphere, Ghibli aesthetic"
+        },
+        {
+            "name": "Cozy Library Corner",
+            "video_queries": ["library cozy", "old library fireplace", "bookshelf candle"],
+            "audio_queries": ["library ambient", "page turning sounds", "quiet room ambient"],
+            "title": "Cozy Library Corner | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "old library, towering bookshelves, warm candlelight, sleeping tabby cat, leather armchair"
+        },
+        {
+            "name": "Tropical Rain Paradise",
+            "video_queries": ["tropical rain forest", "jungle rain peaceful", "tropical storm calm"],
+            "audio_queries": ["tropical rain sounds", "jungle rain ambient", "rainforest ambient"],
+            "title": "Tropical Rain Paradise | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "tropical veranda, heavy warm rain, lush green jungle, bamboo shelter, exotic birds"
+        },
+        {
+            "name": "Train Journey at Night",
+            "video_queries": ["train window night", "train journey rain", "train ride peaceful"],
+            "audio_queries": ["train ambient sounds", "train rain journey", "train tracks rhythm"],
+            "title": "Train Journey at Night | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "night train window, passing city lights, rain streaks, warm compartment, rhythmic tracks"
+        },
+        {
+            "name": "Lakeside Morning Mist",
+            "video_queries": ["lake morning mist", "foggy lake peaceful", "calm lake sunrise"],
+            "audio_queries": ["lake morning ambient", "water lapping sounds", "morning birds lake"],
+            "title": "Lakeside Morning Mist | Lo-fi Hip Hop Beats to Study/Relax to",
+            "vibe": "misty lakeside cabin, early morning light, gentle fog, calm water reflections, birdsong"
+        }
+    ]
+}

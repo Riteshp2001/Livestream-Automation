@@ -1,0 +1,315 @@
+name: SymphonyStation Livestream
+
+on:
+  workflow_dispatch:
+    inputs:
+      duration_minutes:
+        description: Stream length for this run in minutes
+        required: false
+        default: '300'
+      render_mode:
+        description: Render mode for the stream (prerender|live)
+        required: false
+        default: 'prerender'
+      visual_loop_minutes:
+        description: Visual loop length in minutes (used for prerender pack)
+        required: false
+        default: '20'
+      content_source:
+        description: Stream content source (generated|manual|external)
+        required: false
+        default: 'generated'
+      use_hf_thumbnails:
+        description: Force Hugging Face thumbnails (true|false). Leave blank to use repo variable.
+        required: false
+        default: ''
+      hf_image_model:
+        description: Hugging Face image model override (optional)
+        required: false
+        default: ''
+      hf_image_provider:
+        description: Hugging Face inference provider override (optional)
+        required: false
+        default: ''
+      chain_next_run:
+        description: Trigger the next 5-hour run after the 30-minute pause
+        required: false
+        default: 'true'
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: livestream-chain
+  cancel-in-progress: true # Prevent overlapping streams, cancel pending if new run is triggered
+
+jobs:
+  livestream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 325 # 5h stream + 25m buffer (sleep moved to separate job)
+    env:
+      STREAM_DURATION_MINUTES: ${{ inputs.duration_minutes || '300' }}
+      STREAM_RENDER_MODE: ${{ inputs.render_mode || 'prerender' }}
+      STREAM_VISUAL_LOOP_MINUTES: ${{ inputs.visual_loop_minutes || '20' }}
+      STREAM_CONTENT_SOURCE: ${{ inputs.content_source || 'generated' }}
+      CHAIN_NEXT_RUN: ${{ inputs.chain_next_run || 'true' }}
+      PYTHONUNBUFFERED: 1
+      PIP_DISABLE_PIP_VERSION_CHECK: 1
+
+    steps:
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          required_secrets=(
+            "CLIENT_SECRETS_JSON"
+            "TOKEN_JSON"
+            "PIXABAY_API_KEY"
+            "FREESOUND_API_KEY"
+            "YOUTUBE_CHANNEL_ID"
+            "GROQ_API_KEY"
+            "HF_TOKEN"
+          )
+          
+          missing=()
+          for secret in "${required_secrets[@]}"; do
+            if [[ -z "${!secret}" ]]; then
+              missing+=("$secret")
+            fi
+          done
+          
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "ERROR: Missing required secrets: ${missing[*]}"
+            exit 1
+          fi
+        env:
+          CLIENT_SECRETS_JSON: ${{ secrets.CLIENT_SECRETS_JSON }}
+          TOKEN_JSON: ${{ secrets.TOKEN_JSON }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+          YOUTUBE_CHANNEL_ID: ${{ secrets.YOUTUBE_CHANNEL_ID }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+        timeout-minutes: 10
+        continue-on-error: false
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg xvfb openbox
+          ffmpeg -version | head -n 1
+        timeout-minutes: 5
+        continue-on-error: false
+
+      - name: Install Playwright Chromium
+        run: |
+          python -m playwright install --with-deps chromium
+        timeout-minutes: 10
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        continue-on-error: false
+
+      - name: Configure environment
+        shell: bash
+        run: |
+          # Core secrets (masked automatically by GitHub)
+          echo "PIXABAY_API_KEY=${{ secrets.PIXABAY_API_KEY }}" >> $GITHUB_ENV
+          echo "FREESOUND_API_KEY=${{ secrets.FREESOUND_API_KEY }}" >> $GITHUB_ENV
+          echo "YOUTUBE_CHANNEL_ID=${{ secrets.YOUTUBE_CHANNEL_ID }}" >> $GITHUB_ENV
+          echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
+          echo "HF_TOKEN=${{ secrets.HF_TOKEN }}" >> $GITHUB_ENV
+          
+          # Configuration with fallbacks
+          echo "USE_GROQ_COPY=${{ vars.USE_GROQ_COPY }}" >> $GITHUB_ENV
+          
+          use_hf="${{ inputs.use_hf_thumbnails }}"
+          if [[ -z "$use_hf" ]]; then
+            use_hf="${{ vars.USE_HF_THUMBNAILS || 'true' }}"
+          fi
+          echo "USE_HF_THUMBNAILS=$use_hf" >> $GITHUB_ENV
+          
+          hf_model="${{ inputs.hf_image_model }}"
+          if [[ -z "$hf_model" ]]; then
+            hf_model="${{ vars.HF_IMAGE_MODEL || 'black-forest-labs/FLUX.1-schnell' }}"
+          fi
+          echo "HF_IMAGE_MODEL=$hf_model" >> $GITHUB_ENV
+          
+          hf_provider="${{ inputs.hf_image_provider }}"
+          if [[ -z "$hf_provider" ]]; then
+            hf_provider="${{ vars.HF_IMAGE_PROVIDER || 'hf-inference' }}"
+          fi
+          echo "HF_IMAGE_PROVIDER=$hf_provider" >> $GITHUB_ENV
+
+      - name: Decode authentication files
+        shell: bash
+        run: |
+          mkdir -p config
+          echo "${{ secrets.CLIENT_SECRETS_JSON }}" | base64 --decode > config/client_secrets.json
+          echo "${{ secrets.TOKEN_JSON }}" | base64 --decode > config/token.json
+          chmod 600 config/client_secrets.json config/token.json
+
+      - name: Test YouTube API connectivity
+        shell: bash
+        run: |
+          python -c "
+          from lib.livestream import get_youtube_service, get_authenticated_channel
+          print('Testing YouTube API connection...')
+          yt = get_youtube_service()
+          print('✓ Service created successfully')
+          channel = get_authenticated_channel(yt)
+          print(f'✓ Authenticated as: {channel[\"title\"]}')
+          print('✓ YouTube API working correctly')
+          "
+        timeout-minutes: 2
+
+      # Note: Live streaming permissions confirmed working via YouTube Studio
+      # - name: Verify YouTube live streaming permissions
+      #   shell: bash
+      #   run: |
+      #     python test_youtube_live.py
+      #   timeout-minutes: 2
+
+      - name: Run livestream
+        shell: bash
+        run: |
+          set -o pipefail
+          stdbuf -oL -eL python main.py --livestream 2>&1 | tee stream_output.log
+        # Let the step inherit the job-level timeout so the default 5-hour stream
+        # is not killed early while the broadcast is still healthy on YouTube.
+
+      - name: Upload stream logs as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stream-logs-${{ github.run_id }}
+          path: stream_output.log
+          retention-days: 14
+
+      - name: Commit stream history
+        id: commit_history
+        shell: bash
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Only commit if files changed
+          if git diff --quiet data/used_content.json data/stream_history.json; then
+            echo "No changes to stream history or used content"
+            echo "changes_made=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          git add data/used_content.json data/stream_history.json
+          git commit -m "Auto update stream history (run ${{ github.run_id }})"
+          echo "changes_made=true" >> $GITHUB_OUTPUT
+
+      - name: Push changes to repository
+        if: steps.commit_history.outputs.changes_made == 'true'
+        shell: bash
+        run: |
+          retries=0
+          max_retries=5
+          until [ $retries -ge $max_retries ]
+          do
+            git pull --rebase origin main && git push origin main && break
+            retries=$((retries+1))
+            echo "Push failed, attempt $retries/$max_retries"
+            sleep $((retries * 10))
+          done
+          
+          if [ $retries -ge $max_retries ]; then
+            echo "Failed to push changes after $max_retries attempts"
+            exit 1
+          fi
+
+      - name: Cleanup sensitive files
+        if: always()
+        shell: bash
+        run: |
+          rm -f config/client_secrets.json config/token.json stream_output.log
+
+  schedule_next:
+    needs: livestream
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    if: ${{ success() && inputs.chain_next_run == 'true' }}
+    permissions:
+      actions: write
+
+    steps:
+      - name: Wait 30 minutes before next run
+        shell: bash
+        run: |
+          echo "Waiting 30 minutes before scheduling next livestream run"
+          sleep 1800
+
+      - name: Trigger next workflow run
+        shell: bash
+        run: |
+          payload=$(cat <<EOF
+          {
+            "ref": "main",
+            "inputs": {
+              "duration_minutes": "${{ inputs.duration_minutes }}",
+              "render_mode": "${{ inputs.render_mode }}",
+              "visual_loop_minutes": "${{ inputs.visual_loop_minutes }}",
+              "content_source": "${{ inputs.content_source }}",
+              "use_hf_thumbnails": "${{ inputs.use_hf_thumbnails }}",
+              "hf_image_model": "${{ inputs.hf_image_model }}",
+              "hf_image_provider": "${{ inputs.hf_image_provider }}",
+              "chain_next_run": "${{ inputs.chain_next_run }}"
+            }
+          }
+          EOF)
+          
+          retries=0
+          max_retries=5
+          until [ $retries -ge $max_retries ]
+          do
+            response=$(curl -s -w "%{http_code}" -o /dev/null \
+              -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ github.token }}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/${{ github.repository }}/actions/workflows/livestream.yaml/dispatches \
+              -d "$payload")
+            
+            if [ "$response" = "204" ]; then
+              echo "Successfully scheduled next run"
+              exit 0
+            fi
+            
+            retries=$((retries+1))
+            echo "API request failed with status $response, attempt $retries/$max_retries"
+            sleep $((retries * 10))
+          done
+          
+          echo "Failed to schedule next run after $max_retries attempts"
+          exit 1

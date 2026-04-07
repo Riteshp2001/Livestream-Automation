@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SymphonyStation Visualizer</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <iframe id="shader-frame" title="Shader visualizer" hidden></iframe>
+    <canvas id="visualizer"></canvas>
+    <div class="vignette-overlay"></div>
+    <div class="cinematic-overlay"></div>
+    
+    <div id="ui-layer">
+      <div id="pomodoro-timer" hidden>
+        <span id="pomo-status">FOCUS</span>
+        <span id="pomo-time">25:00</span>
+      </div>
+      <div id="chat-popup" class="hidden-fade">
+        <div id="chat-msg"></div>
+      </div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

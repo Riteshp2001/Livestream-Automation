@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SymphonyStation Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Default Theme Variables */
+        :root {
+            --primary: #ff0050;
+            --primary-gradient: linear-gradient(135deg, #ff0050 0%, #f75900 100%);
+            --primary-glow: rgba(255, 0, 80, 0.4);
+            --success: #00d4aa;
+            --warning: #ffb020;
+            --danger: #ff4757;
+            --bg: #05050a;
+            --bg-card: rgba(18, 20, 28, 0.6);
+            --bg-card-hover: rgba(25, 28, 38, 0.8);
+            --text: #ffffff;
+            --text-secondary: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            --glass-blur: blur(20px);
+        }
+
+        /* Theme Overrides */
+        body.theme-purple {
+            --primary: #a855f7;
+            --primary-gradient: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+            --primary-glow: rgba(168, 85, 247, 0.4);
+        }
+
+        body.theme-cyan {
+            --primary: #06b6d4;
+            --primary-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            --primary-glow: rgba(6, 182, 212, 0.4);
+        }
+
+        body.theme-emerald {
+            --primary: #10b981;
+            --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --primary-glow: rgba(16, 185, 129, 0.4);
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 15% 50%, var(--primary-glow), transparent 45%),
+                radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.02), transparent 50%);
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            padding: 32px 24px;
+            overflow-x: hidden;
+            transition: background-image 0.8s ease;
+        }
+
+        /* Background ambient animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 16px;
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; width: 4px; height: 100%;
+            background: var(--primary-gradient);
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        /* Dynamic Status Badges */
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.idle { background: rgba(255,255,255,0.1); color: var(--text-secondary); border: 1px solid rgba(255,255,255,0.1); }
+        .status-badge.queued { background: rgba(255, 176, 32, 0.2); color: var(--warning); border: 1px solid rgba(255, 176, 32, 0.4); }
+        .status-badge.starting { background: rgba(0, 212, 170, 0.2); color: var(--success); border: 1px solid rgba(0, 212, 170, 0.4); }
+        .status-badge.live {
+            background: rgba(255, 0, 80, 0.15);
+            color: #ff0050;
+            border: 1px solid rgba(255, 0, 80, 0.5);
+            animation: livePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            text-shadow: 0 0 10px rgba(255, 0, 80, 0.5);
+        }
+
+        @keyframes livePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 80, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(255, 0, 80, 0); }
+        }
+
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Grid & Cards */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: var(--bg-card-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6), 0 0 20px var(--primary-glow);
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .card-title i { font-size: 1.2rem; color: var(--primary); }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #fff, rgba(255,255,255,0.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .metric-label { font-size: 0.875rem; color: var(--text-secondary); }
+
+        .metric-trend {
+            font-size: 0.8rem;
+            margin-top: auto;
+            padding-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .metric-trend.positive { color: var(--success); }
+        .metric-trend.neutral { color: var(--text-secondary); }
+
+        /* Forms & Inputs */
+        .form-group { margin-bottom: 20px; }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        select.form-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--primary-glow);
+        }
+
+        .btn-danger {
+            background: rgba(255, 71, 87, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: rgba(255, 71, 87, 0.2);
+            border-color: var(--danger);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* Tables */
+        .runs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .runs-table th {
+            text-align: left;
+            padding: 16px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .runs-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .runs-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .chip-success { background: rgba(0, 212, 170, 0.1); color: var(--success); }
+        .chip-failure { background: rgba(255, 71, 87, 0.1); color: var(--danger); }
+        .chip-pending { background: rgba(255, 176, 32, 0.1); color: var(--warning); }
+        .chip-running { background: rgba(6, 182, 212, 0.1); color: #06b6d4; }
+
+        /* Logs */
+        .log-container {
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 0.875rem;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .log-container::-webkit-scrollbar { width: 6px; }
+        .log-container::-webkit-scrollbar-track { background: transparent; }
+        .log-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .log-line { margin: 6px 0; line-height: 1.4; }
+        .log-time { color: var(--text-secondary); margin-right: 8px; font-size: 0.8rem; }
+        .log-status { color: #38bdf8; }
+        .log-error { color: #f87171; }
+        .log-success { color: #34d399; }
+
+        /* Auth Panel */
+        .auth-panel {
+            max-width: 450px;
+            margin: 15vh auto;
+            text-align: center;
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .auth-panel .title { justify-content: center; font-size: 2rem; margin-bottom: 24px; }
+
+        /* Theme Selector */
+        .theme-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-dot {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .theme-dot:hover { transform: scale(1.1); }
+        .theme-dot.active { border-color: white; transform: scale(1.1); }
+        
+        .dot-default { background: linear-gradient(135deg, #ff0050, #f75900); }
+        .dot-purple { background: linear-gradient(135deg, #a855f7, #ec4899); }
+        .dot-cyan { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
+        .dot-emerald { background: linear-gradient(135deg, #10b981, #059669); }
+
+        /* Responsive Layout */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-layout { grid-template-columns: 1fr; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- Authentication Screen -->
+            <div v-if="!authenticated" class="auth-panel">
+                <div class="title">
+                    <i class="mdi mdi-broadcast" style="color: var(--primary)"></i>
+                    SymphonyStation
+                </div>
+                <p style="margin-bottom: 32px; color: var(--text-secondary); line-height: 1.6;">
+                    Connect to the cloud orchestrator using your GitHub Personal Access Token.
+                </p>
+                <div class="form-group text-left" style="text-align: left;">
+                    <label class="form-label">Access Token</label>
+                    <input type="password" v-model="tokenInput" class="form-input" placeholder="ghp_xxxxxxxxxxxx" @keyup.enter="authenticate">
+                </div>
+                <button class="btn btn-primary" @click="authenticate" style="margin-top: 10px;">
+                    <i class="mdi mdi-login-variant"></i> Authorize Connection
+                </button>
+            </div>
+
+            <!-- Dashboard Screen -->
+            <div v-else>
+                <header class="header">
+                    <div class="title">
+                        <i class="mdi mdi-broadcast" style="color: var(--primary); font-size: 1.8rem;"></i>
+                        SymphonyStation
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 24px;">
+                        <!-- Theme Customizer -->
+                        <div class="theme-selector">
+                            <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-right: 4px;">Theme:</span>
+                            <div class="theme-dot dot-default" :class="{active: currentTheme === 'default'}" @click="setTheme('default')"></div>
+                            <div class="theme-dot dot-purple" :class="{active: currentTheme === 'purple'}" @click="setTheme('purple')"></div>
+                            <div class="theme-dot dot-cyan" :class="{active: currentTheme === 'cyan'}" @click="setTheme('cyan')"></div>
+                            <div class="theme-dot dot-emerald" :class="{active: currentTheme === 'emerald'}" @click="setTheme('emerald')"></div>
+                        </div>
+
+                        <!-- Dynamic Status -->
+                        <div class="status-badge" :class="streamStatus.toLowerCase()">
+                            <i class="mdi" :class="statusIcon"></i>
+                            {{ streamStatus }}
+                        </div>
+                    </div>
+                </header>
+
+                <div class="grid" style="grid-template-columns: repeat(4, 1fr);">
+                    <div class="card">
+                        <div class="card-title"><i class="mdi mdi-youtube"></i> Viewers</div>
+                        <div class="metric-value">{{ stats.concurrentViewers || 0 }}</div>
+                        <div class="metric-label">Watching reality unfold</div>
+                        <div class="metric-trend" :class="stats.viewerChange >= 0 ? 'positive' : 'negative'">
+                            <i class="mdi" :class="stats.viewerChange >= 0 ? 'mdi-trending-up' : 'mdi-trending-down'"></i> 
+                            {{ Math.abs(stats.viewerChange || 0) }}% from last run
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><i class="mdi mdi-clock-time-eight"></i> Block Time</div>
+                        <div class="metric-value">{{ stats.hoursStreamed || 0 }}h</div>
+                        <div class="metric-label">Lifetime airtime</div>
+                        <div class="metric-trend positive">
+                            <i class="mdi mdi-transmission-tower"></i> Connected
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><i class="mdi mdi-check-decagram"></i> Stability</div>
+                        <div class="metric-value">{{ stats.successRate || 0 }}%</div>
+                        <div class="metric-label">Completed sessions</div>
+                        <div class="metric-trend neutral">
+                            <i class="mdi mdi-server"></i> {{ stats.totalStreams || 0 }} historical runs
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><i class="mdi mdi-heart-pulse"></i> Engagement</div>
+                        <div class="metric-value">{{ stats.totalViews || '99.9' }}k</div>
+                        <div class="metric-label">Total atmospheric plays</div>
+                        <div class="metric-trend positive">
+                            <i class="mdi mdi-thumb-up"></i> {{ stats.likes || 0 }} resonance
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-layout">
+                    <!-- Left Column: Operations -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <div class="card" style="flex: 1;">
+                            <div class="card-title" style="margin-bottom: 24px;"><i class="mdi mdi-tune-variant"></i> Mission Control</div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label class="form-label">Broadcast Duration (mins)</label>
+                                    <input type="number" v-model="config.duration_minutes" class="form-input" min="5" max="720">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Render Engine</label>
+                                    <select v-model="config.render_mode" class="form-input">
+                                        <option value="prerender">Prerender (Stable Loop)</option>
+                                        <option value="live">Live Render (Dynamic)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label class="form-label">Symphony Mode</label>
+                                    <select v-model="config.content_source" class="form-input">
+                                        <option value="generated">Autonomous AI Agent</option>
+                                        <option value="manual">Manual Package</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" style="height: 100%; display: flex; align-items: flex-end; padding-bottom: 12px; cursor: pointer;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <input type="checkbox" v-model="config.chain_next_run" style="width: 18px; height: 18px; accent-color: var(--primary);">
+                                            <span>Engage Auto-Chain Continuity</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 16px; margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border);">
+                                <button class="btn btn-primary" :disabled="isStreamActive" @click="startStream">
+                                    <i class="mdi mdi-rocket-launch"></i> Deploy Stream
+                                </button>
+                                <button class="btn btn-danger" :disabled="!isStreamActive" @click="stopStream">
+                                    <i class="mdi mdi-close-octagon"></i> Abort Mission
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title"><i class="mdi mdi-history"></i> Execution History</div>
+                            <table class="runs-table">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Uptime</th>
+                                        <th>Initiated</th>
+                                        <th>Log</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="run in recentRuns.slice(0, 5)" :key="run.id">
+                                        <td>
+                                            <span class="status-chip" :class="getChipClass(run.status)">
+                                                <i class="mdi" :class="getChipIcon(run.status)"></i>
+                                                {{ run.statusText }}
+                                            </span>
+                                        </td>
+                                        <td style="color: var(--text-secondary); font-family: 'JetBrains Mono', monospace;">{{ run.duration }}</td>
+                                        <td style="color: var(--text-secondary);">{{ run.startedAt }}</td>
+                                        <td>
+                                            <a :href="run.url" target="_blank" style="color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                                                View <i class="mdi mdi-arrow-top-right"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="recentRuns.length === 0">
+                                        <td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 32px;">No signal data available.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Terminal -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <div class="card" style="flex: 1;">
+                            <div class="card-title"><i class="mdi mdi-console"></i> Telemetry Terminal</div>
+                            <div class="log-container" id="terminal" style="flex: 1; height: 100%; min-height: 400px;">
+                                <div v-for="log in logs" :key="log.id" class="log-line">
+                                    <span class="log-time">[{{ log.time }}]</span>
+                                    <span :class="log.type">{{ log.message }}</span>
+                                </div>
+                                <div v-if="logs.length === 0" style="color: var(--text-secondary); opacity: 0.5;">Awaiting connection...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    authenticated: false,
+                    token: null,
+                    tokenInput: '',
+                    streamStatus: 'Idle',
+                    currentTheme: 'default',
+                    config: {
+                        duration_minutes: 300,
+                        render_mode: 'prerender',
+                        visual_loop_minutes: 20,
+                        content_source: 'generated',
+                        use_hf_thumbnails: '',
+                        hf_image_model: '',
+                        hf_image_provider: '',
+                        chain_next_run: true
+                    },
+                    stats: {
+                        totalStreams: 0,
+                        hoursStreamed: 0,
+                        successRate: 0,
+                        concurrentViewers: 0,
+                        viewerChange: 0,
+                        streamsToday: 0,
+                        totalViews: 0,
+                        likes: 0
+                    },
+                    recentRuns: [],
+                    logs: [],
+                    refreshInterval: null,
+                    currentRunId: null
+                }
+            },
+
+            computed: {
+                isStreamActive() {
+                    return ['Queued', 'Starting...', 'LIVE'].includes(this.streamStatus);
+                },
+                statusIcon() {
+                    return {
+                        'Idle': 'mdi-sleep',
+                        'Queued': 'mdi-timer-sand spin',
+                        'Starting...': 'mdi-cog spin',
+                        'LIVE': 'mdi-broadcast'
+                    }[this.streamStatus] || 'mdi-circle-outline';
+                }
+            },
+
+            methods: {
+                setTheme(themeName) {
+                    this.currentTheme = themeName;
+                    document.body.className = themeName === 'default' ? '' : `theme-${themeName}`;
+                    localStorage.setItem('dashboard_theme', themeName);
+                },
+
+                async authenticate() {
+                    if (!this.tokenInput) return;
+                    this.addLog('Initiating handshake with GitHub API...', 'status');
+                    try {
+                        const response = await fetch('https://api.github.com/user', {
+                            headers: {
+                                'Authorization': `Bearer ${this.tokenInput}`,
+                                'X-GitHub-Api-Version': '2022-11-28'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            this.token = this.tokenInput;
+                            this.authenticated = true;
+                            localStorage.setItem('github_token', this.token);
+                            this.addLog('Uplink established successfully.', 'success');
+                            this.loadRecentRuns();
+                            this.refreshInterval = setInterval(() => this.loadRecentRuns(), 10000); // 10s poll for better Live detection
+                        } else {
+                            this.addLog('Access Denied. Invalid token credentials.', 'error');
+                        }
+                    } catch (e) {
+                        this.addLog(`Connection failure: ${e.message}`, 'error');
+                    }
+                },
+
+                async startStream() {
+                    this.addLog('Constructing deployment payload...', 'status');
+                    try {
+                        const response = await fetch('https://api.github.com/repos/Riteshp2001/Livestream-Automation/actions/workflows/livestream.yaml/dispatches', {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/vnd.github+json',
+                                'Authorization': `Bearer ${this.token}`,
+                                'X-GitHub-Api-Version': '2022-11-28'
+                            },
+                            body: JSON.stringify({
+                                ref: 'main',
+                                inputs: {
+                                    duration_minutes: this.config.duration_minutes.toString(),
+                                    render_mode: this.config.render_mode,
+                                    content_source: this.config.content_source,
+                                    chain_next_run: this.config.chain_next_run.toString()
+                                }
+                            })
+                        });
+
+                        if (response.status === 204) {
+                            this.addLog('Ignition sequence started. Remote action triggered.', 'success');
+                            this.streamStatus = 'Queued';
+                            setTimeout(() => this.loadRecentRuns(), 3000); // Quick check
+                        } else {
+                            throw new Error(`API rejected request: ${response.status}`);
+                        }
+                    } catch (e) {
+                        this.addLog(`Abort: ${e.message}`, 'error');
+                    }
+                },
+
+                async stopStream() {
+                    this.addLog('Sending kill signal to active runner...', 'warning');
+                    if (this.currentRunId) {
+                        await fetch(`https://api.github.com/repos/Riteshp2001/Livestream-Automation/actions/runs/${this.currentRunId}/cancel`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/vnd.github+json',
+                                'Authorization': `Bearer ${this.token}`,
+                                'X-GitHub-Api-Version': '2022-11-28'
+                            }
+                        });
+                        this.addLog('Signal sent. Awaiting confirmation.', 'status');
+                    }
+                },
+
+                addLog(message, type = 'status') {
+                    const now = new Date();
+                    const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+                    this.logs.push({
+                        id: Date.now() + Math.random(),
+                        time: timeString,
+                        message,
+                        type: `log-${type}`
+                    });
+                    
+                    // Auto scroll to bottom
+                    this.$nextTick(() => {
+                        const term = document.getElementById('terminal');
+                        if(term) term.scrollTop = term.scrollHeight;
+                    });
+                },
+
+                async loadRecentRuns() {
+                    try {
+                        const response = await fetch('https://api.github.com/repos/Riteshp2001/Livestream-Automation/actions/runs?per_page=10&event=workflow_dispatch', {
+                            headers: {
+                                'Accept': 'application/vnd.github+json',
+                                'Authorization': `Bearer ${this.token}`,
+                                'X-GitHub-Api-Version': '2022-11-28'
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        if(!data.workflow_runs) return;
+
+                        // Calculate statuses
+                        let newStatus = 'Idle';
+                        this.currentRunId = null;
+
+                        this.recentRuns = data.workflow_runs.map(run => {
+                            let statusText = run.conclusion ? run.conclusion.toUpperCase() : 'QUEUED';
+                            let runtimeStatus = 'pending';
+
+                            if (run.status === 'in_progress' || run.status === 'queued') {
+                                this.currentRunId = run.id;
+                                const createdDate = new Date(run.created_at);
+                                const now = new Date();
+                                const diffMinutes = (now - createdDate) / 60000;
+                                
+                                if (run.status === 'queued') {
+                                    statusText = 'QUEUED';
+                                    runtimeStatus = 'pending';
+                                    newStatus = 'Queued';
+                                } else if (diffMinutes < 2) {
+                                    // Less than 2 minutes in progress -> Starting dependencies/renders
+                                    statusText = 'BOOTING';
+                                    runtimeStatus = 'running';
+                                    newStatus = 'Starting...';
+                                } else {
+                                    // More than 2 minutes -> Should be live broadcasting
+                                    statusText = 'LIVE';
+                                    runtimeStatus = 'live';
+                                    newStatus = 'LIVE';
+                                }
+                            } else if (run.conclusion === 'success') {
+                                runtimeStatus = 'success';
+                            } else if (run.conclusion === 'cancelled') {
+                                runtimeStatus = 'pending'; // grey out
+                            } else {
+                                runtimeStatus = 'failure';
+                            }
+
+                            return {
+                                id: run.id,
+                                status: runtimeStatus,
+                                statusText: statusText,
+                                duration: this.calculateDuration(run.created_at, run.updated_at, run.status),
+                                startedAt: new Date(run.created_at).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}),
+                                url: run.html_url
+                            };
+                        });
+
+                        this.streamStatus = newStatus;
+
+                        // Mock stats updates for coolness
+                        const successes = data.workflow_runs.filter(r => r.conclusion === 'success').length;
+                        this.stats.totalStreams = data.total_count;
+                        this.stats.successRate = data.workflow_runs.length ? Math.round((successes / data.workflow_runs.length) * 100) : 0;
+                        if(this.streamStatus === 'LIVE') {
+                            this.stats.hoursStreamed = Math.round(data.total_count * 5.1); // approx
+                        }
+                        
+                    } catch (e) {
+                        // Suppress background poll errors
+                    }
+                },
+
+                calculateDuration(start, end, status) {
+                    const startDate = new Date(start);
+                    // If running, calculate up to now
+                    const endDate = (status === 'in_progress') ? new Date() : new Date(end);
+                    
+                    if (isNaN(startDate.getTime())) return '00:00';
+                    const diffSeconds = Math.max(0, Math.round((endDate - startDate) / 1000));
+                    
+                    const h = Math.floor(diffSeconds / 3600);
+                    const m = Math.floor((diffSeconds % 3600) / 60);
+                    const s = diffSeconds % 60;
+                    
+                    if(h > 0) return `${h}h ${m}m`;
+                    return `${m}m ${s}s`;
+                },
+
+                getChipClass(status) {
+                    const map = {
+                        'success': 'chip-success',
+                        'failure': 'chip-failure',
+                        'pending': 'chip-pending',
+                        'running': 'chip-running',
+                        'live': 'chip-success' // We'll make live use green/red mix depending on mood, but green works well
+                    };
+                    return map[status] || 'chip-pending';
+                },
+
+                getChipIcon(status) {
+                    const map = {
+                        'success': 'mdi-check-all',
+                        'failure': 'mdi-alert-octagon',
+                        'pending': 'mdi-dots-horizontal',
+                        'running': 'mdi-loading spin',
+                        'live': 'mdi-broadcast'
+                    };
+                    return map[status] || 'mdi-circle-outline';
+                }
+            },
+
+            mounted() {
+                const savedTheme = localStorage.getItem('dashboard_theme') || 'default';
+                this.setTheme(savedTheme);
+                
+                const savedToken = localStorage.getItem('github_token');
+                if (savedToken) {
+                    this.tokenInput = savedToken;
+                    this.authenticate();
+                }
+            },
+
+            unmounted() {
+                if (this.refreshInterval) clearInterval(this.refreshInterval);
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
