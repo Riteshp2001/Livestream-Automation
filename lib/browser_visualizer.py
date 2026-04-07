@@ -1,12 +1,14 @@
 import base64
 import json
 import os
+import shutil
 import socketserver
 import threading
 from functools import partial
 from http.server import SimpleHTTPRequestHandler
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import tempfile
 
 from lib.stream_engine import transcode_video
 
@@ -138,18 +140,25 @@ class LiveVisualizerSession:
         self.browser = None
         self.context = None
         self.page = None
+        self.user_data_dir = None
 
     def start(self):
         self.server = VisualizerHttpServer(VISUALIZER_WEB_ROOT).start()
         sync_playwright = _playwright()
         self.playwright = sync_playwright().start()
-        self.browser = self.playwright.chromium.launch(
+        page_url = self.server.page_url(self.config)
+        self.user_data_dir = tempfile.mkdtemp(prefix="live-visualizer-chrome-")
+        self.context = self.playwright.chromium.launch_persistent_context(
+            self.user_data_dir,
             headless=False,
+            viewport={"width": self.width, "height": self.height},
+            no_viewport=True,
             args=[
                 f"--window-size={self.width},{self.height}",
                 "--autoplay-policy=no-user-gesture-required",
                 "--start-fullscreen",
                 "--kiosk",
+                f"--app={page_url}",
                 "--no-first-run",
                 "--no-default-browser-check",
                 "--disable-infobars",
@@ -173,11 +182,8 @@ class LiveVisualizerSession:
                 "--disable-session-crashed-bubble",
             ],
         )
-        self.context = self.browser.new_context(
-            viewport={"width": self.width, "height": self.height}
-        )
-        self.page = self.context.new_page()
-        self.page.goto(self.server.page_url(self.config), wait_until="load")
+        self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
+        self.page.goto(page_url, wait_until="load")
         self.page.wait_for_function("window.__visualizerReady === true", timeout=60000)
         return self
 
@@ -188,6 +194,8 @@ class LiveVisualizerSession:
             self.context.close()
         if self.browser:
             self.browser.close()
+        if self.user_data_dir:
+            shutil.rmtree(self.user_data_dir, ignore_errors=True)
         if self.playwright:
             self.playwright.stop()
         if self.server:
