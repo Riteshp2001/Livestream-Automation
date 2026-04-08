@@ -9,6 +9,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from lib.audio_generation.catalog import load_merged_sound_catalog
+from lib.audio_generation.fallback import resolve_sound_reference
 from lib.radiant_shader_ids import RADIANT_SHADER_IDS
 
 # Groq autonomous director — imported lazily to avoid hard dep when disabled
@@ -238,8 +239,10 @@ def validate_livestream_profiles(payload, sound_catalog=None):
             for role, config in layer_configs.items():
                 unknown_sounds = set(config.get("sounds", [])) - available_sound_ids
                 if unknown_sounds:
-                    raise ValueError(
-                        f"Profile {profile_id} role {role} references unknown sound ids: {sorted(unknown_sounds)}"
+                    print(
+                        f"[AudioFallback] Profile {profile_id} role {role} references missing "
+                        f"sound ids {sorted(unknown_sounds)}. Runtime fallback will try the local "
+                        "catalog first, then Freesound."
                     )
 
 
@@ -327,6 +330,48 @@ def resolve_profile(
     return candidates[-1]
 
 
+def _shader_blend_weight():
+    try:
+        return max(0.0, min(1.0, float(os.getenv("STREAM_SHADER_WEIGHT", "0.4"))))
+    except ValueError:
+        return 0.4
+
+
+def _classic_visualizer_ids(allowed_visualizers):
+    return [visualizer_id for visualizer_id in allowed_visualizers if visualizer_id not in RADIANT_SHADER_IDS]
+
+
+def _explicit_shader_ids(allowed_visualizers):
+    return [visualizer_id for visualizer_id in allowed_visualizers if visualizer_id in RADIANT_SHADER_IDS]
+
+
+def _derived_shader_ids(profile, daypart, season, count=6):
+    shader_ids = sorted(RADIANT_SHADER_IDS)
+    if not shader_ids:
+        return []
+    sampler = random.Random(seed_to_int(f"{profile['id']}:{daypart}:{season}:radiant"))
+    sampler.shuffle(shader_ids)
+    return shader_ids[: max(1, min(count, len(shader_ids)))]
+
+
+def choose_visualizer_id(profile, daypart, season, rng):
+    allowed_visualizers = list(dict.fromkeys(profile["allowed_visualizers"]))
+    classic_ids = _classic_visualizer_ids(allowed_visualizers)
+    shader_ids = _explicit_shader_ids(allowed_visualizers)
+
+    if not shader_ids:
+        shader_ids = _derived_shader_ids(profile, daypart, season, count=max(4, len(classic_ids)))
+
+    if not classic_ids:
+        return rng.choice(shader_ids)
+    if not shader_ids:
+        return rng.choice(classic_ids)
+
+    shader_weight = _shader_blend_weight()
+    pool = shader_ids if rng.random() < shader_weight else classic_ids
+    return rng.choice(pool)
+
+
 def _dedupe_tags(values):
     seen = set()
     output = []
@@ -374,18 +419,37 @@ def choose_layers(profile, sound_catalog, rng, duration_seconds):
     layers = []
     for role in ("bed", "secondary", "noise", "binaural", "accent"):
         config = profile["layers"].get(role, {})
-        sounds = list(config.get("sounds", []))
-        if not sounds:
+        configured_sound_ids = list(config.get("sounds", []))
+        if not configured_sound_ids:
             continue
-        max_count = min(int(config.get("max", 0)), len(sounds))
+        resolved_sounds = []
+        seen_sound_ids = set()
+        for requested_sound_id in configured_sound_ids:
+            try:
+                sound = resolve_sound_reference(requested_sound_id, sound_catalog)
+            except Exception as error:
+                print(
+                    f"[AudioFallback] Could not resolve requested sound '{requested_sound_id}' "
+                    f"for profile {profile['id']} role {role}: {error}"
+                )
+                continue
+            if sound["id"] in seen_sound_ids:
+                continue
+            seen_sound_ids.add(sound["id"])
+            resolved_sounds.append(sound)
+
+        if not resolved_sounds:
+            continue
+
+        max_count = min(int(config.get("max", 0)), len(resolved_sounds))
         min_count = min(int(config.get("min", 0)), max_count)
         if max_count <= 0:
             continue
         count = rng.randint(min_count, max_count)
         if role == "bed" and count == 0:
             count = 1
-        for sound_id in rng.sample(sounds, count):
-            sound = sound_catalog[sound_id]
+        for sound in rng.sample(resolved_sounds, count):
+            sound_id = sound["id"]
             mode = (
                 "burst"
                 if sound["default_mode"] == "burst" or role == "accent"
@@ -514,12 +578,17 @@ def build_stream_plan(
 
     # Visualizer: Groq decision > variant > RNG
     allowed_visualizers = profile["allowed_visualizers"]
-    if groq_decision and groq_decision.get("visualizer_id") in allowed_visualizers:
+    if groq_decision and groq_decision.get("visualizer_id") in SUPPORTED_VISUALIZER_IDS:
         visualizer_id = groq_decision["visualizer_id"]
     elif variant and variant.get("visualizer_id"):
         visualizer_id = variant["visualizer_id"]
     else:
-        visualizer_id = rng.choice(allowed_visualizers)
+        visualizer_id = choose_visualizer_id(
+            profile,
+            context["daypart"],
+            context["season"],
+            rng,
+        )
 
     layers = choose_layers(profile, sound_catalog, rng, duration_seconds)
     continuous_layers = [layer for layer in layers if layer["mode"] == "continuous"]

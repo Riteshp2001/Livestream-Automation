@@ -138,14 +138,20 @@ class LiveVisualizerSession:
         self.browser = None
         self.context = None
         self.page = None
+        self.user_data_dir = None
 
     def start(self):
         self.server = VisualizerHttpServer(VISUALIZER_WEB_ROOT).start()
         sync_playwright = _playwright()
         self.playwright = sync_playwright().start()
-        self.browser = self.playwright.chromium.launch(
+        page_url = self.server.page_url(self.config)
+        self.user_data_dir = TemporaryDirectory()
+        self.context = self.playwright.chromium.launch_persistent_context(
+            self.user_data_dir.name,
             headless=False,
+            viewport={"width": self.width, "height": self.height},
             args=[
+                f"--app={page_url}",
                 f"--window-size={self.width},{self.height}",
                 "--autoplay-policy=no-user-gesture-required",
                 "--start-fullscreen",
@@ -173,22 +179,64 @@ class LiveVisualizerSession:
                 "--disable-session-crashed-bubble",
             ],
         )
-        self.context = self.browser.new_context(
-            viewport={"width": self.width, "height": self.height}
-        )
-        self.page = self.context.new_page()
-        self.page.goto(self.server.page_url(self.config), wait_until="load")
+        self.browser = self.context.browser
+        self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
+        if self.page.url != page_url:
+            self.page.goto(page_url, wait_until="load")
+        else:
+            self.page.wait_for_load_state("load")
         self.page.wait_for_function("window.__visualizerReady === true", timeout=60000)
+        self.page.bring_to_front()
+        self.page.evaluate(
+            """
+            async () => {
+                const root = document.documentElement;
+                if (document.fullscreenElement !== root) {
+                    try {
+                        await root.requestFullscreen();
+                    } catch (error) {
+                        // Browser-level fullscreen fallback is handled below.
+                    }
+                }
+            }
+            """
+        )
+        try:
+            self.page.keyboard.press("F11")
+        except Exception:
+            pass
+        self.page.wait_for_timeout(500)
         return self
 
     def stop(self):
         if self.page:
-            self.page.close()
+            try:
+                self.page.close()
+            except Exception:
+                pass
+            self.page = None
         if self.context:
-            self.context.close()
-        if self.browser:
-            self.browser.close()
+            try:
+                self.context.close()
+            except Exception:
+                pass
+            self.context = None
+            self.browser = None
+        elif self.browser:
+            try:
+                self.browser.close()
+            except Exception:
+                pass
+            self.browser = None
         if self.playwright:
-            self.playwright.stop()
+            try:
+                self.playwright.stop()
+            except Exception:
+                pass
+            self.playwright = None
         if self.server:
             self.server.stop()
+            self.server = None
+        if self.user_data_dir:
+            self.user_data_dir.cleanup()
+            self.user_data_dir = None
