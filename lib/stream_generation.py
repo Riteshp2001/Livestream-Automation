@@ -43,24 +43,41 @@ SUPPORTED_VISUALIZER_IDS = {
 } | RADIANT_SHADER_IDS
 VALID_DAYPARTS = {"dawn", "morning", "afternoon", "evening", "night", "late_night"}
 VALID_SEASONS = {"spring", "summer", "autumn", "winter"}
+# -- Loudness hierarchy (human-ear priority) ------------------------------------
+# bed (nature/place/objects)    -> LOUDEST  -- the star of the soundscape
+# secondary (supporting nature) -> clearly and warmly audible
+# binaural                      -> genuinely present, not phantom-quiet
+# accent (burst events)         -> subtle textural moments
+# noise (white/brown masking)   -> NEAR-SILENT -- subliminal only, never noticed
+# -------------------------------------------------------------------------------
 ROLE_VOLUME_RANGES = {
-    "bed": (0.38, 0.54),
-    "secondary": (0.12, 0.26),
-    "noise": (0.05, 0.14),
-    "binaural": (0.03, 0.08),
-    "accent": (0.04, 0.10),
+    "bed":       (0.42, 0.60),   # Primary soundscape -- nature / place / objects
+    "secondary": (0.18, 0.32),   # Supporting natural layer -- clearly heard
+    "noise":     (0.02, 0.05),   # Masking noise -- nearly inaudible / subliminal
+    "binaural":  (0.06, 0.14),   # Binaural beats -- audible but gentle
+    "accent":    (0.05, 0.12),   # Burst accents -- fleeting textural moments
 }
+# Per-sound gain multipliers applied on top of role volume.
+# Weather / raw noise sounds are pulled back so the natural soundscape stays king.
 COZY_SOUND_GAIN_MULTIPLIERS = {
-    "nature_thunder": 0.62,
-    "nature_whale": 0.74,
-    "nature_cat": 0.58,
-    "things_keyboard": 0.58,
-    "things_typewriter": 0.52,
-    "things_clock": 0.5,
-    "things_wind_chimes": 0.64,
-    "things_singing_bowl": 0.7,
-    "noise_white": 0.82,
-    "rain_heavy_rain": 0.9,
+    # -- Weather / raw power sounds -- reduce; they must texture, not dominate
+    "nature_thunder":   0.50,   # Thunder strikes but doesn't shock
+    "rain_heavy_rain":  0.72,   # Heavy rain stays textured, not front-and-centre
+    "nature_howling_wind": 0.60, # Howling wind is felt, not blasted
+    "nature_wind":      0.68,   # Wind is a texture behind the scene
+    # -- Place / object sounds -- warm and intimate --------------------------
+    "nature_whale":         0.74,
+    "nature_cat":           0.58,
+    "things_keyboard":      0.58,
+    "things_typewriter":    0.52,
+    "things_clock":         0.50,
+    "things_wind_chimes":   0.64,
+    "things_singing_bowl":  0.70,
+    # -- Noise -- at ultra-low role volume; multiplier keeps it barely audible
+    "noise_white":  0.72,
+    "noise_brown":  0.72,
+    "noise_pink":   0.72,
+    "noise_green":  0.72,
 }
 PROFILE_TITLE_STRATEGY = {
     "rain_sleep_window": {

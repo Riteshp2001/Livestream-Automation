@@ -92,30 +92,42 @@ def generate_stream_copy(plan, fallback_metadata, preview=False):
     )
     user_prompt = json.dumps(prompt_payload, ensure_ascii=True)
 
-    response = requests.post(
-        GROQ_API_URL,
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "model": model,
-            "temperature": 0.35,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-        },
-        timeout=60,
-    )
-    response.raise_for_status()
-    payload = response.json()
-    content = payload["choices"][0]["message"]["content"]
-    
-    # Clean markdown if present
-    content = content.replace('```json', '').replace('```', '').strip()
-    
-    parsed = json.loads(content, strict=False)
+    try:
+        response = requests.post(
+            GROQ_API_URL,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type":  "application/json",
+            },
+            json={
+                "model":       model,
+                "temperature": 0.35,
+                "max_tokens":  1024,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user",   "content": user_prompt},
+                ],
+            },
+            timeout=60,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        content = payload["choices"][0]["message"]["content"]
+
+        # Strip markdown fences if Groq adds them
+        content = content.replace("```json", "").replace("```", "").strip()
+
+        parsed = json.loads(content, strict=False)
+
+    except requests.HTTPError as exc:
+        print(f"[GroqCopy] HTTP error from Groq API: {exc} — using fallback metadata.")
+        return None
+    except json.JSONDecodeError as exc:
+        print(f"[GroqCopy] JSON parse error in Groq response: {exc} — using fallback metadata.")
+        return None
+    except Exception as exc:
+        print(f"[GroqCopy] Unexpected error: {exc} — using fallback metadata.")
+        return None
 
     title = _sanitize_text(parsed.get("title"), max_length=100) or fallback_metadata["title"]
     description = _sanitize_text(parsed.get("description"), preserve_newlines=True) or fallback_metadata["description"]
@@ -124,10 +136,10 @@ def generate_stream_copy(plan, fallback_metadata, preview=False):
     badge_text = _sanitize_text(parsed.get("badge_text"), max_length=28) or fallback_metadata["badge_text"]
 
     return {
-        "title": title,
-        "description": description,
-        "thumbnail_title": thumbnail_title,
+        "title":              title,
+        "description":        description,
+        "thumbnail_title":    thumbnail_title,
         "thumbnail_subtitle": thumbnail_subtitle,
-        "badge_text": badge_text,
+        "badge_text":         badge_text,
     }
 

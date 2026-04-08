@@ -8,7 +8,7 @@ When USE_GROQ_SYMPHONY_DIRECTOR=1 is set, Groq will autonomously decide:
   • Which visualizer to render
   • Which palette/color-mood to choose
   • Which daypart/season to force (overriding the real clock)
-  • The  "soothing_reasoning" it used to make those picks
+  • The "soothing_reasoning" it used to make those picks
 
 Groq receives the full menu of available profiles + visualizers and returns
 a structured JSON decision that is then injected into the stream plan.
@@ -36,40 +36,85 @@ load_dotenv()
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile"
 
-# ── Soothing sound profiles that Groq is allowed to weight heavily ──────────
-SOOTHING_PROFILE_HINTS = [
-    "rain_sleep_window",
+# ── Quality profile hints — the best-sounding profiles Groq should favour ───
+QUALITY_PROFILE_HINTS = [
+    # Animal-dominant (highest priority — richest, most human-ear-pleasing)
+    "night_crickets_sleep",
+    "dawn_birdsong",
+    "frog_pond_night",
+    "whale_song_deep_ocean",
+    "owl_forest_night",
+    "tropical_bird_sanctuary",
+    "wetland_chorus_dusk",
+    "ancient_forest_animals",
+    # Premium nature profiles
     "ocean_night_drift",
-    "snow_fire_night",
     "river_meditation",
+    "forest_water_calm",
     "jungle_rain_retreat",
     "moonlit_fire_meditation",
+    "underwater_dreamscape",
     "coastal_fog_morning",
     "whale_blue_meditation",
-    "deep_brown_sleep",
-    "underwater_dreamscape",
-    "alpine_wind_sleep",
-    "forest_water_calm",
-    "thunder_rain_deep_rest",
-    "summer_cricket_garden",
+    "snow_fire_night",
     "dawn_birdsong_focus",
+    "summer_cricket_garden",
+    # Atmospheric (good but not animal-led)
+    "rain_sleep_window",
+    "alpine_wind_sleep",
+    "fireplace_reading_room",
+    "autumn_leaf_walk",
 ]
 
-SOOTHING_VISUALIZER_HINTS = [
+QUALITY_VISUALIZER_HINTS = [
     "aurora",
     "breathing_orb",
     "mist_layers",
     "ink_diffusion",
     "liquid_ribbons",
     "horizon_reflection",
-    "veil_lines",
     "particle_drift",
-    "rotating_mandala",
     "constellation",
+    "rotating_mandala",
+    "veil_lines",
 ]
 
 VALID_DAYPARTS = ["dawn", "morning", "afternoon", "evening", "night", "late_night"]
 VALID_SEASONS  = ["spring", "summer", "autumn", "winter"]
+
+_SYSTEM_PROMPT = (
+    "You are the Autonomous Symphony Director for a 24/7 ambience streaming channel called 'Symphony.Station'."
+    " Your sole purpose is to select the BEST POSSIBLE stream profile right now — not a random one, not a mediocre one."
+    " You are a world-class sound curator. Every choice must be intentional, beautiful, and deeply considered.\n\n"
+
+    "QUALITY PRINCIPLES (non-negotiable):\n"
+    "  1. The primary soundscape must be rich, natural, and immersive — not just noise or weather.\n"
+    "  2. Animal sounds (birds, crickets, frogs, whales, owls) are the highest quality bed layers — prefer them when available.\n"
+    "  3. Nature profiles (forest, ocean, river, rainforest, garden) are far superior to pure noise profiles.\n"
+    "  4. Binaural beats MUST be paired with beautiful nature sounds so they feel medicinal, not clinical.\n"
+    "  5. Noise-only or weather-wall profiles are last resort. Never pick them when richer alternatives exist.\n"
+    "  6. The best sound experience makes the listener feel like they are SOMEWHERE real — a moonlit garden, a forest creek, an ocean shore.\n\n"
+
+    "You will receive a JSON menu of all available stream profiles and visualizers."
+    " Return ONLY a valid JSON object with these exact keys:\n"
+    "  - profile_id        : must be one of the profile ids in the menu\n"
+    "  - visualizer_id     : must be one of the allowed_visualizers for the chosen profile\n"
+    "  - palette_id        : must be one of the palette_ids for the chosen profile\n"
+    "  - daypart           : must be one of: dawn, morning, afternoon, evening, night, late_night\n"
+    "  - season            : must be one of: spring, summer, autumn, winter\n"
+    "  - soothing_reasoning: one evocative sentence (max 120 chars) explaining your choice as if speaking to the listener\n\n"
+
+    "Selection Guidelines:\n"
+    "  - Animal-dominant profiles (crickets, birds, frogs, whale) = highest priority for beauty.\n"
+    "  - Nature-water profiles (ocean, river, waterfall, rainforest) = excellent choices.\n"
+    "  - Fire + nature profiles (fireplace, campfire) = excellent for evening and night.\n"
+    "  - Mixed nature + light weather = good. Pure weather/noise profiles = only if nothing better fits.\n"
+    "  - Night and late_night dayparts are the most calming. Prefer them unless morning/dawn animals fit better.\n"
+    "  - Vary your picks intelligently. Never repeat the same obvious choice. Surprise the listener beautifully.\n"
+    "  - The listener deserves the BEST, not random filler. Act accordingly.\n\n"
+
+    "CRITICAL: Return valid JSON only. No markdown, no explanation outside the JSON object."
+)
 
 
 def _build_director_prompt(profiles_data: dict, visualizer_ids: set) -> tuple[str, str]:
@@ -87,54 +132,34 @@ def _build_director_prompt(profiles_data: dict, visualizer_ids: set) -> tuple[st
         for p in profiles_data.get("profiles", [])
     ]
 
-    system_prompt = (
-        "You are the Autonomous Symphony Director for a 24/7 ambience streaming channel called 'Symphony.Station'. "
-        "Your sole purpose is to decide what kind of deeply soothing and relaxing symphony music video should play RIGHT NOW. "
-        "You have full creative authority — your decision is final and autonomous. "
-        "The goal is the most calming, immersive, sleep- or meditation-inducing experience possible.\n\n"
-        "You will receive a JSON menu of all available stream profiles and visualizers. "
-        "You must return a JSON object (and ONLY that JSON, no other text) with these exact keys:\n"
-        "  • profile_id      — must be one of the profile ids in the menu\n"
-        "  • visualizer_id   — must be one of the allowed_visualizers for the chosen profile\n"
-        "  • palette_id      — must be one of the palette_ids for the chosen profile\n"
-        "  • daypart         — must be one of: dawn, morning, afternoon, evening, night, late_night\n"
-        "  • season          — must be one of: spring, summer, autumn, winter\n"
-        "  • soothing_reasoning — a single evocative sentence (max 120 chars) explaining WHY this combination\n"
-        "                         is the most soothing right now (written as if speaking to the viewer)\n\n"
-        "Guidelines:\n"
-        "  - Always bias towards sleep, deep relaxation, and gentle meditation experiences.\n"
-        "  - Night and late_night dayparts produce the most calming atmospheres.\n"
-        "  - Visualizers like aurora, breathing_orb, mist_layers, ink_diffusion, liquid_ribbons are the most soothing.\n"
-        "  - Rain, ocean, fire, and nature profiles produce the most relaxing soundscapes.\n"
-        "  - Pick the combination that a tired listener would find most healing at THIS moment.\n"
-        "  - Be creative — vary your picks each time based on your internal sense of what feels right.\n"
-        "CRITICAL: Return valid JSON only. No markdown, no explanation outside the JSON."
-    )
-
     user_prompt = json.dumps(
         {
-            "task": "Decide the most soothing symphony stream to generate right now.",
+            "task": "Select the highest-quality, most beautiful symphony stream to generate right now.",
             "profiles_menu": profiles_menu,
             "all_visualizers": sorted(visualizer_ids),
-            "soothing_profile_hints": SOOTHING_PROFILE_HINTS,
-            "soothing_visualizer_hints": SOOTHING_VISUALIZER_HINTS,
+            "quality_profile_hints": QUALITY_PROFILE_HINTS,
+            "quality_visualizer_hints": QUALITY_VISUALIZER_HINTS,
         },
         ensure_ascii=True,
         indent=None,
     )
 
-    return system_prompt, user_prompt
+    return _SYSTEM_PROMPT, user_prompt
 
 
 def _validate_decision(decision: dict, profiles_data: dict, visualizer_ids: set) -> dict:
     """Validate Groq's decision against available options; fill in safe defaults if needed."""
     profiles = {p["id"]: p for p in profiles_data.get("profiles", [])}
 
-    # Validate / fallback profile
+    # Validate / fallback profile — prefer quality hints on fallback
     profile_id = decision.get("profile_id", "")
     if profile_id not in profiles:
-        profile_id = random.choice(SOOTHING_PROFILE_HINTS)
-        while profile_id not in profiles:
+        # Try quality hints first
+        for hint in QUALITY_PROFILE_HINTS:
+            if hint in profiles:
+                profile_id = hint
+                break
+        else:
             profile_id = random.choice(list(profiles.keys()))
     profile = profiles[profile_id]
 
@@ -142,8 +167,8 @@ def _validate_decision(decision: dict, profiles_data: dict, visualizer_ids: set)
     allowed_visualizers = set(profile.get("allowed_visualizers", []))
     visualizer_id = decision.get("visualizer_id", "")
     if visualizer_id not in allowed_visualizers:
-        soothing_overlap = [v for v in SOOTHING_VISUALIZER_HINTS if v in allowed_visualizers]
-        visualizer_id = soothing_overlap[0] if soothing_overlap else list(allowed_visualizers)[0]
+        quality_overlap = [v for v in QUALITY_VISUALIZER_HINTS if v in allowed_visualizers]
+        visualizer_id = quality_overlap[0] if quality_overlap else list(allowed_visualizers)[0]
 
     # Validate / fallback palette
     palette_ids = [pal["id"] for pal in profile.get("palette_sets", [])]
@@ -157,18 +182,20 @@ def _validate_decision(decision: dict, profiles_data: dict, visualizer_ids: set)
         overlap = [d for d in ["night", "late_night", "evening"] if d in profile.get("dayparts", [])]
         daypart = overlap[0] if overlap else profile.get("dayparts", ["night"])[0]
 
-    season = decision.get("season", "winter")
+    season = decision.get("season", "spring")
     if season not in VALID_SEASONS or season not in profile.get("seasons", VALID_SEASONS):
-        season = profile.get("seasons", ["winter"])[0]
+        season = profile.get("seasons", ["spring"])[0]
 
-    reasoning = str(decision.get("soothing_reasoning", "Groq selected the most soothing ambience for this moment."))[:140]
+    reasoning = str(
+        decision.get("soothing_reasoning", "Groq selected the finest ambience for this moment.")
+    )[:140]
 
     return {
-        "profile_id": profile_id,
-        "visualizer_id": visualizer_id,
-        "palette_id": palette_id,
-        "daypart": daypart,
-        "season": season,
+        "profile_id":        profile_id,
+        "visualizer_id":     visualizer_id,
+        "palette_id":        palette_id,
+        "daypart":           daypart,
+        "season":            season,
         "soothing_reasoning": reasoning,
     }
 
@@ -198,17 +225,17 @@ def get_groq_symphony_decision(
 
     for attempt in range(1, retries + 2):
         try:
-            print(f"[GroqDirector] Asking Groq to autonomously pick the most soothing symphony… (attempt {attempt})")
+            print(f"[GroqDirector] Selecting best symphony stream… (attempt {attempt})")
             response = requests.post(
                 GROQ_API_URL,
                 headers={
                     "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
+                    "Content-Type":  "application/json",
                 },
                 json={
-                    "model": model,
-                    "temperature": 0.85,   # Higher temp = more creative, autonomous picks
-                    "max_tokens": 512,
+                    "model":       model,
+                    "temperature": 0.75,   # Slightly lower = more consistent high-quality picks
+                    "max_tokens":  512,
                     "messages": [
                         {"role": "system", "content": system_prompt},
                         {"role": "user",   "content": user_prompt},
@@ -219,7 +246,7 @@ def get_groq_symphony_decision(
             response.raise_for_status()
             payload = response.json()
             raw_content = payload["choices"][0]["message"]["content"].strip()
-            # Strip markdown fences if present
+            # Strip markdown fences if Groq adds them
             raw_content = raw_content.replace("```json", "").replace("```", "").strip()
             decision_raw = json.loads(raw_content, strict=False)
             decision = _validate_decision(decision_raw, profiles_data, visualizer_ids)
@@ -230,10 +257,15 @@ def get_groq_symphony_decision(
                 f"[GroqDirector] 💭 \"{decision['soothing_reasoning']}\""
             )
             return decision
+        except json.JSONDecodeError as exc:
+            print(f"[GroqDirector] Attempt {attempt} — JSON parse error: {exc}")
+        except requests.HTTPError as exc:
+            print(f"[GroqDirector] Attempt {attempt} — HTTP error: {exc}")
         except Exception as exc:
-            print(f"[GroqDirector] Attempt {attempt} failed: {exc}")
-            if attempt <= retries:
-                time.sleep(2 ** attempt)
+            print(f"[GroqDirector] Attempt {attempt} — Unexpected error: {exc}")
+
+        if attempt <= retries:
+            time.sleep(2 ** attempt)
 
     print("[GroqDirector] All attempts failed — falling back to standard stream plan selection.")
     return None
