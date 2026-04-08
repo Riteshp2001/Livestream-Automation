@@ -337,8 +337,6 @@ def run_livestream_mode():
                             live_chat_id = items[0]["snippet"].get("liveChatId")
                         if live_chat_id:
                             print_status(f"Live chat ID: {live_chat_id}")
-                            from lib.live_audio_switcher import post_stream_intro_comment
-                            post_stream_intro_comment(youtube, live_chat_id)
                         else:
                             print_status("Warning: could not fetch live chat ID — polls disabled")
                     except Exception as chat_err:
@@ -362,6 +360,7 @@ def run_livestream_mode():
                         archive_path             = archive_path,
                         plan                     = plan,
                         youtube_service          = youtube,
+                        broadcast_id             = broadcast_id,
                         live_chat_id             = live_chat_id,
                     )
 

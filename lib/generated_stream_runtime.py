@@ -396,14 +396,15 @@ def start_live_generated_stream(
     display_duration_seconds=None,
     plan=None,
     youtube_service=None,
+    broadcast_id=None,
     live_chat_id=None,
 ):
     """
     Start a live generated stream with segment-based audio switching.
 
     If youtube_service + live_chat_id are provided, a LivePollScheduler will
-    run alongside the stream, posting community polls every 10 minutes and
-    hot-swapping the audio profile based on viewer votes.
+    run alongside the stream, posting community polls on a low-call schedule
+    and hot-swapping the audio profile based on viewer votes.
     """
     from lib.live_audio_switcher import LiveAudioSwitcher, LivePollScheduler
     from lib.stream_generation import load_sound_catalog, load_livestream_profiles
@@ -450,6 +451,7 @@ def start_live_generated_stream(
             if youtube_service and live_chat_id:
                 poll_sched = LivePollScheduler(
                     youtube_service    = youtube_service,
+                    broadcast_id       = broadcast_id,
                     live_chat_id       = live_chat_id,
                     audio_switcher     = switcher,
                     current_profile_id = plan["profile_id"],

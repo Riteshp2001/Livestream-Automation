@@ -24,6 +24,9 @@ LIVE_STREAM_STATE = {
     "weather_override": None,
     "palette_override": None,
     "chat_message": None,
+    "current_viewers": 0,
+    "chat_automation_enabled": False,
+    "chat_automation_status": "",
 }
 
 class _QuietRequestHandler(SimpleHTTPRequestHandler):

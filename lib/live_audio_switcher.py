@@ -1,7 +1,7 @@
 """
 live_audio_switcher.py
 ─────────────────────────────────────────────────────────────────────────────
-Segment-based live audio hot-swap engine + 10-minute poll scheduler.
+Segment-based live audio hot-swap engine + low-call poll scheduler.
 
 Architecture
 ────────────
@@ -12,9 +12,9 @@ Architecture
     - Seamless switch — no RTMP interruption, no silence
 
   LivePollScheduler
-    - Every POLL_INTERVAL_SECONDS (default: 600 = 10 min), triggers a vote
+    - Every POLL_INTERVAL_SECONDS (default: 900 = 15 min), triggers a vote
     - Posts a genre-filtered poll to YouTube live chat
-    - Collects votes for VOTE_WINDOW_SECONDS (default: 120 = 2 min)
+    - Collects votes for VOTE_WINDOW_SECONDS (default: 60 = 1 min)
     - Per-user dedup — only first vote per user per poll counts
     - Winner is announced + queued for audio switch
     - Tally shown in visualizer overlay during voting
@@ -30,14 +30,39 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from lib.youtube_chat_polling import (
+    DEFAULT_CHAT_POLL_SECONDS,
+    RATE_LIMIT_BACKOFF_SECONDS,
+    classify_chat_poll_error,
+    next_poll_delay_seconds,
+)
+from lib.youtube_viewer_gate import ViewerThresholdGate
+
 if TYPE_CHECKING:
     pass  # avoid circular imports from stream_generation
 
+
+def _env_flag(name: str, default: str) -> bool:
+    return os.getenv(name, default).strip().lower() not in {"0", "false", "no", "off"}
+
+
+def build_stream_intro_comment() -> str:
+    interval_minutes = max(1, POLL_INTERVAL_SEC // 60)
+    return (
+        "🎵 You control the vibe!\n"
+        f"Every {interval_minutes} min I'll post a poll — type the number to vote.\n"
+        "Most votes wins and the soundscape switches 🎧\n"
+        "One vote per person · genre-matched options only"
+    )
+
 # ── Configuration (all overridable via env vars) ──────────────────────────────
 SEGMENT_SECONDS     = int(os.getenv("STREAM_SEGMENT_SECONDS",   "60"))   # audio segment length
-POLL_INTERVAL_SEC   = int(os.getenv("STREAM_POLL_INTERVAL_SEC", "600"))  # 10 min between polls
-VOTE_WINDOW_SEC     = int(os.getenv("STREAM_VOTE_WINDOW_SEC",   "120"))  # 2 min voting window
+POLL_INTERVAL_SEC   = int(os.getenv("STREAM_POLL_INTERVAL_SEC", "900"))  # 15 min between polls
+VOTE_WINDOW_SEC     = int(os.getenv("STREAM_VOTE_WINDOW_SEC",   "60"))   # 1 min voting window
 POLL_OPTIONS_COUNT  = int(os.getenv("STREAM_POLL_OPTIONS",      "5"))    # choices per poll
+POST_RESULT_MESSAGES = _env_flag("STREAM_CHAT_POST_RESULT_MESSAGES", "0")
+POST_NO_VOTE_MESSAGES = _env_flag("STREAM_CHAT_POST_NO_VOTE_MESSAGES", "0")
+POST_INTRO_MESSAGE = _env_flag("STREAM_CHAT_POST_INTRO_MESSAGE", "1")
 
 
 # ── Shared live state (read by visualizer overlay) ────────────────────────────
@@ -253,9 +278,9 @@ class LiveAudioSwitcher:
 
 class LivePollScheduler:
     """
-    Posts a genre-specific community poll to YouTube live chat every 10 minutes.
+    Posts a genre-specific community poll to YouTube live chat on a low-call schedule.
 
-    - 2-minute voting window
+    - 1-minute voting window by default
     - Per-user dedup
     - Tally shown in visualizer overlay
     - Winner queued for audio switch via LiveAudioSwitcher.request_switch()
@@ -264,16 +289,30 @@ class LivePollScheduler:
     def __init__(
         self,
         youtube_service,
+        broadcast_id: str | None,
         live_chat_id: str,
         audio_switcher: LiveAudioSwitcher,
         current_profile_id: str,
     ) -> None:
         self._yt          = youtube_service
+        self._broadcast_id = broadcast_id
         self._chat_id     = live_chat_id
         self._switcher    = audio_switcher
         self._profile_id  = current_profile_id
         self._stop_event  = threading.Event()
         self._thread: threading.Thread | None = None
+        self._disabled_reason: str | None = None
+        self._intro_posted = False
+        self._viewer_gate = (
+            ViewerThresholdGate(
+                youtube_service,
+                broadcast_id,
+                state_label="poll scheduler",
+            )
+            if broadcast_id
+            else None
+        )
+        self._viewer_gate_enabled: bool | None = None
 
     def start(self) -> "LivePollScheduler":
         self._thread = threading.Thread(target=self._scheduler_loop, daemon=True, name="PollScheduler")
@@ -289,7 +328,38 @@ class LivePollScheduler:
         """Called after each successful audio switch to keep genre context fresh."""
         self._profile_id = profile_id
 
-    def _post_chat_message(self, text: str) -> None:
+    def _chat_automation_enabled(self, *, force: bool = False) -> bool:
+        if not self._viewer_gate:
+            return True
+
+        try:
+            enabled = self._viewer_gate.is_enabled(force=force)
+        except Exception as exc:
+            reason = classify_chat_poll_error(exc)
+            if reason == "quotaExceeded":
+                self._disabled_reason = reason
+                self._stop_event.set()
+                print("[PollScheduler] Quota exhausted while checking viewer count; disabling scheduler.")
+            else:
+                print(f"[PollScheduler] Viewer check failed: {exc}")
+            return False
+
+        if enabled != self._viewer_gate_enabled:
+            viewers = self._viewer_gate.current_viewers()
+            threshold = self._viewer_gate.min_viewers
+            if enabled:
+                print(f"[PollScheduler] Chat automation enabled at {viewers} viewers.")
+            else:
+                print(f"[PollScheduler] Chat automation paused below threshold: {viewers} viewers (need > {threshold}).")
+            self._viewer_gate_enabled = enabled
+
+        if not enabled:
+            LIVE_STREAM_STATE["chat_message"] = (
+                f"Chat automation paused until viewers exceed {self._viewer_gate.min_viewers}."
+            )
+        return enabled
+
+    def _post_chat_message(self, text: str) -> bool:
         """Post a message to the YouTube live chat."""
         try:
             self._yt.liveChatMessages().insert(
@@ -302,8 +372,20 @@ class LivePollScheduler:
                     }
                 },
             ).execute()
+            return True
         except Exception as exc:
-            print(f"[PollScheduler] Failed to post chat message: {exc}")
+            reason = classify_chat_poll_error(exc)
+            if reason == "quotaExceeded":
+                self._disabled_reason = reason
+                self._stop_event.set()
+                print("[PollScheduler] Quota exhausted while posting chat message; disabling chat polling.")
+            elif reason in {"liveChatEnded", "liveChatDisabled", "liveChatNotFound"}:
+                self._disabled_reason = reason
+                self._stop_event.set()
+                print(f"[PollScheduler] Chat messaging disabled: {exc}")
+            else:
+                print(f"[PollScheduler] Failed to post chat message: {exc}")
+            return False
 
     def _run_poll(self) -> None:
         from lib.chat_command_router import (
@@ -313,13 +395,17 @@ class LivePollScheduler:
             PROFILE_LABELS,
         )
 
+        if not self._chat_automation_enabled():
+            return
+
         candidates = get_poll_candidates(
             current_profile_id=self._profile_id,
             count=POLL_OPTIONS_COUNT,
             rng_seed=int(time.time()),
         )
         poll_text = format_poll_message(candidates, vote_window_seconds=VOTE_WINDOW_SEC)
-        self._post_chat_message(poll_text)
+        if not self._post_chat_message(poll_text) and self._disabled_reason:
+            return
         print(f"[PollScheduler] Poll posted for profile={self._profile_id}")
 
         collector = VoteCollector(candidates)
@@ -327,8 +413,12 @@ class LivePollScheduler:
         # ── Collect votes for VOTE_WINDOW_SEC ────────────────────────────────
         next_page_token = None
         deadline = time.time() + VOTE_WINDOW_SEC
+        poll_delay = DEFAULT_CHAT_POLL_SECONDS
 
         while time.time() < deadline and not self._stop_event.is_set():
+            if not self._chat_automation_enabled():
+                LIVE_STREAM_STATE["chat_message"] = "Polling paused until viewers exceed the threshold."
+                return
             remaining = int(deadline - time.time())
             # Update overlay tally
             LIVE_STREAM_STATE["chat_message"] = collector.get_overlay_tally(remaining)
@@ -340,6 +430,7 @@ class LivePollScheduler:
                     pageToken=next_page_token,
                 )
                 resp = req.execute()
+                poll_delay = next_poll_delay_seconds(resp)
                 next_page_token = resp.get("nextPageToken")
                 for item in resp.get("items", []):
                     msg    = item["snippet"]["displayMessage"].strip()
@@ -349,9 +440,27 @@ class LivePollScheduler:
                         uname = item["authorDetails"]["displayName"]
                         print(f"[PollScheduler] Vote: {uname} → {msg}")
             except Exception as exc:
-                print(f"[PollScheduler] Chat read error: {exc}")
+                reason = classify_chat_poll_error(exc)
+                if reason == "quotaExceeded":
+                    self._disabled_reason = reason
+                    LIVE_STREAM_STATE["chat_message"] = "Chat voting paused: YouTube API quota exhausted."
+                    print("[PollScheduler] Quota exhausted; disabling chat polling for this run.")
+                    self._stop_event.set()
+                    break
+                if reason == "rateLimitExceeded":
+                    poll_delay = max(poll_delay, RATE_LIMIT_BACKOFF_SECONDS)
+                    print(f"[PollScheduler] Backing off chat polling after rate limit: {exc}")
+                elif reason in {"liveChatEnded", "liveChatDisabled", "liveChatNotFound"}:
+                    self._disabled_reason = reason
+                    print(f"[PollScheduler] Stopping chat polling: {exc}")
+                    self._stop_event.set()
+                    break
+                else:
+                    print(f"[PollScheduler] Chat read error: {exc}")
 
-            time.sleep(5)  # poll every 5s (YouTube API quota friendly)
+            remaining_sleep = min(poll_delay, max(0.0, deadline - time.time()))
+            if remaining_sleep > 0 and not self._stop_event.is_set():
+                time.sleep(remaining_sleep)
 
         # ── Tally ─────────────────────────────────────────────────────────────
         result = collector.tally()
@@ -359,14 +468,16 @@ class LivePollScheduler:
             winning_pid, vote_count = result
             winning_label = PROFILE_LABELS.get(winning_pid, winning_pid.replace("_", " "))
             result_msg = format_result_message(winning_label, vote_count, next_poll_minutes=POLL_INTERVAL_SEC // 60)
-            self._post_chat_message(result_msg)
+            if POST_RESULT_MESSAGES:
+                self._post_chat_message(result_msg)
             print(f"[PollScheduler] Winner: {winning_pid} ({vote_count} votes)")
             self._switcher.request_switch(winning_pid)
             self.notify_current_profile(winning_pid)
             LIVE_STREAM_STATE["chat_message"] = f"🎵 {winning_label.strip()} won the vote! Switching soon…"
         else:
             # No votes — keep current
-            self._post_chat_message("🎵 No votes this round — keeping the current vibe! Next vote soon 🕐")
+            if POST_NO_VOTE_MESSAGES:
+                self._post_chat_message("🎵 No votes this round — keeping the current vibe! Next vote soon 🕐")
             print("[PollScheduler] No votes received — keeping current profile")
             LIVE_STREAM_STATE["chat_message"] = "No votes — keeping current vibe 🎧"
 
@@ -382,7 +493,28 @@ class LivePollScheduler:
         self._stop_event.wait(warm_up)
 
         while not self._stop_event.is_set():
+            if not self._chat_automation_enabled():
+                if self._disabled_reason:
+                    print(f"[PollScheduler] Scheduler stopped: {self._disabled_reason}")
+                    break
+                wait_for_viewers = self._viewer_gate.refresh_seconds if self._viewer_gate else 60
+                self._stop_event.wait(wait_for_viewers)
+                continue
+
+            if POST_INTRO_MESSAGE and not self._intro_posted:
+                if self._post_chat_message(build_stream_intro_comment()):
+                    self._intro_posted = True
+                elif self._disabled_reason:
+                    print(f"[PollScheduler] Scheduler stopped: {self._disabled_reason}")
+                    break
+
             self._run_poll()
+            if self._disabled_reason:
+                print(f"[PollScheduler] Scheduler stopped: {self._disabled_reason}")
+                break
+            if self._viewer_gate and self._viewer_gate_enabled is False:
+                self._stop_event.wait(self._viewer_gate.refresh_seconds)
+                continue
             # Wait the remainder of the interval (poll already took VOTE_WINDOW_SEC)
             wait_after = max(0, POLL_INTERVAL_SEC - VOTE_WINDOW_SEC)
             print(f"[PollScheduler] Next poll in {wait_after}s")
@@ -394,12 +526,10 @@ def post_stream_intro_comment(youtube_service, live_chat_id: str) -> None:
     Post a single minimalistic instructions message to YouTube live chat
     at stream start so viewers know how to participate.
     """
-    msg = (
-        "🎵 You control the vibe!\n"
-        "Every 10 min I'll post a poll — type the number to vote.\n"
-        "Most votes wins and the soundscape switches 🎧\n"
-        "One vote per person · genre-matched options only"
-    )
+    if not POST_INTRO_MESSAGE:
+        return
+
+    msg = build_stream_intro_comment()
     try:
         youtube_service.liveChatMessages().insert(
             part="snippet",
