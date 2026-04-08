@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 
 import requests
 from dotenv import load_dotenv
@@ -102,7 +103,7 @@ def generate_stream_copy(plan, fallback_metadata, preview=False):
             json={
                 "model":       model,
                 "temperature": 0.35,
-                "max_tokens":  1024,
+                "max_tokens":  1500,   # Descriptions are long; avoid truncated/broken JSON
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user",   "content": user_prompt},
@@ -116,6 +117,12 @@ def generate_stream_copy(plan, fallback_metadata, preview=False):
 
         # Strip markdown fences if Groq adds them
         content = content.replace("```json", "").replace("```", "").strip()
+
+        # Fix invalid JSON escape sequences (e.g. \s \D \w \e that Groq sometimes
+        # writes in description text). json.loads strict=False does NOT fix these.
+        # Valid JSON escapes after \ are: " \ / b f n r t u
+        # Anything else gets its backslash doubled to become a safe literal \.
+        content = re.sub(r'\\(?!["\\\'/bfnrtu])', r'\\\\', content)
 
         parsed = json.loads(content, strict=False)
 
