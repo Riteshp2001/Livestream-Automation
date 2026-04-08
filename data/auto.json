@@ -1,0 +1,256 @@
+{
+    "videos": [
+        {
+            "duration_minutes": 85,
+            "video_query": "AI generated quiet evening by a bonfire",
+            "audio_query": "soft crackling and distant laughter",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.48,
+            "video_query": "AI generated light breeze through reeds",
+            "audio_query": "gentle rustling and soft splashes",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 70,
+            "video_query": "AI generated serene ocean view at dusk",
+            "audio_query": "soft waves and distant seagulls",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated soft sounds of a forest at dusk",
+            "audio_query": "gentle rustling and distant calls",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 60,
+            "video_query": "AI generated calm desert landscape at sunset",
+            "audio_query": "soft wind and distant echoes",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated sound of a train in the distance",
+            "audio_query": "soft rumbling and distant whistles",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 75,
+            "video_query": "AI generated peaceful farm at sunrise",
+            "audio_query": "soft animal sounds and gentle wind",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated sound of distant bells ringing",
+            "audio_query": "soft chimes and echoes",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 70,
+            "video_query": "AI generated tranquil night by the campfire",
+            "audio_query": "soft crackling and distant crickets",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated light raindrops on a tin roof",
+            "audio_query": "soft tapping and gentle drips",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 80,
+            "video_query": "AI generated calm lake at sunset",
+            "audio_query": "soft lapping and distant calls",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.55,
+            "video_query": "AI generated soft sounds of fireflies",
+            "audio_query": "gentle buzzing and rustling",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 60,
+            "video_query": "AI generated peaceful ocean shore at sunrise",
+            "audio_query": "gentle waves and distant gulls",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated sound of wind in an open field",
+            "audio_query": "soft rustling and echoes",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 75,
+            "video_query": "AI generated quiet garden at dusk",
+            "audio_query": "soft buzzing and distant night sounds",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated sound of leaves crunching underfoot",
+            "audio_query": "gentle crunching and rustling",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 70,
+            "video_query": "AI generated tranquil forest path",
+            "audio_query": "soft footsteps and nature sounds",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated distant sounds of a train",
+            "audio_query": "soft rumbling and whistle",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 90,
+            "video_query": "AI generated calm snowy landscape",
+            "audio_query": "soft snow crunching and distant sounds",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated sound of a gentle breeze",
+            "audio_query": "soft whooshing and rustling",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 75,
+            "video_query": "AI generated peaceful sunset over rolling hills",
+            "audio_query": "gentle wind and distant birds",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated sound of a distant waterfall",
+            "audio_query": "soft rushing water and splashes",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 80,
+            "video_query": "AI generated serene view of a calm river",
+            "audio_query": "soft water sounds and birds chirping",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated soft echoes in a cave",
+            "audio_query": "gentle whispers and rustling",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 75,
+            "video_query": "AI generated tranquil evening in a small town",
+            "audio_query": "soft conversations and distant sounds",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated sound of gentle waves lapping",
+            "audio_query": "soft ripples and splashes",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 65,
+            "video_query": "AI generated quiet valley at sunset",
+            "audio_query": "soft wind and distant animals",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated sound of distant thunder",
+            "audio_query": "soft rumbling and crackles",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 70,
+            "video_query": "AI generated serene beach at twilight",
+            "audio_query": "soft waves and distant laughter",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated soft sounds of leaves rustling",
+            "audio_query": "gentle whispers and fluttering",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 75,
+            "video_query": "AI generated calm sunset in a fishing village",
+            "audio_query": "soft waves and distant voices",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated sound of birds chirping",
+            "audio_query": "soft tweeting and rustling",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 90,
+            "video_query": "AI generated peaceful rural landscape",
+            "audio_query": "gentle breezes and distant farm sounds",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated sound of waves crashing",
+            "audio_query": "soft crashing and foamy splashes",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        },
+        {
+            "duration_minutes": 75,
+            "video_query": "AI generated tranquil garden in spring",
+            "audio_query": "soft buzzing and gentle wind",
+            "upload_to_youtube": true,
+            "video_type": "video"
+        },
+        {
+            "duration_minutes": 0.5,
+            "video_query": "AI generated sound of crackling fire",
+            "audio_query": "soft pops and warmth",
+            "upload_to_youtube": true,
+            "video_type": "short"
+        }
+    ]
+}

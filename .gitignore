@@ -1,0 +1,132 @@
+# ============================================================
+#  SymphonyStation Livestream Automation — .gitignore
+# ============================================================
+
+# ─────────────────────────────────────────────────────────────
+# 🔐 SECRETS & CREDENTIALS  (NEVER commit these)
+# ─────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# Google OAuth / YouTube API tokens
+token.json
+client_secrets.json
+config/token.json
+config/client_secrets.json
+
+# ─────────────────────────────────────────────────────────────
+# 📊 DYNAMIC DATA  (generated at runtime — not source code)
+# ─────────────────────────────────────────────────────────────
+data/stream_history.json
+data/used_content.json
+
+# ─────────────────────────────────────────────────────────────
+# 🎞️ MEDIA & GENERATED ASSETS  (large / auto-generated files)
+# ─────────────────────────────────────────────────────────────
+/videos/
+/assets/livestream/
+/assets/test_*.png
+/assets/test_*.jpg
+*.mp4
+*.mp3
+*.ogg
+*.wav
+*.webm
+*.mkv
+*.avi
+*.flv
+
+# ─────────────────────────────────────────────────────────────
+# 🐍 PYTHON
+# ─────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.tox/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# ─────────────────────────────────────────────────────────────
+# 📦 NODE / JAVASCRIPT  (if frontend tooling is ever added)
+# ─────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+
+# ─────────────────────────────────────────────────────────────
+# 📝 LOGS & TEMP FILES
+# ─────────────────────────────────────────────────────────────
+*.log
+*.tmp
+*.temp
+stream_output.log
+test_gen.py
+test_verify.py
+output.txt
+
+# ─────────────────────────────────────────────────────────────
+# 🖥️ OS & EDITOR JUNK
+# ─────────────────────────────────────────────────────────────
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains / PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
+*.swp
+*.swo
+Session.vim
+
+# ─────────────────────────────────────────────────────────────
+# ☁️ DEPLOYMENT & CI TEMP FILES
+# ─────────────────────────────────────────────────────────────
+.vercel/
+.netlify/
+.serverless/
+
+# ─────────────────────────────────────────────────────────────
+# 🧩 PLAYWRIGHT
+# ─────────────────────────────────────────────────────────────
+playwright-report/
+test-results/

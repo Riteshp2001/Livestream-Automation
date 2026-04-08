@@ -1,0 +1,797 @@
+{
+  "timezone_default": "America/Chicago",
+  "profiles": [
+    {
+      "id": "rain_sleep_window",
+      "display_name": "Rain Sleep Window",
+      "dayparts": ["evening", "night", "late_night", "dawn"],
+      "seasons": ["spring", "summer", "autumn", "winter"],
+      "weight": 10,
+      "allowed_visualizers": ["monochrome_rain", "veil_lines", "breathing_orb"],
+      "palette_sets": [
+        {"id": "moon_rain", "colors": ["#0B172A", "#224870", "#5FA8D3", "#E4F1FE"]},
+        {"id": "window_amber", "colors": ["#111827", "#374151", "#C08457", "#FDE68A"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["rain_light_rain", "rain_window", "rain_umbrella"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_wind_trees", "nature_crickets", "things_ceiling_fan"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_pink", "noise_brown"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_theta_4hz", "binaural_delta_2hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["nature_thunder", "things_wind_chimes"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Rain Sleep Window",
+        "descriptor": "Seeded night rain ambience"
+      },
+      "thumbnail_parts": {
+        "title": "Rain Sleep Window",
+        "subtitle": "Soft rain and warm room calm"
+      },
+      "tags": ["sleep music", "rain sounds", "window rain", "night ambience", "deep sleep"],
+      "example_variants": [
+        {"id": "night_autumn", "daypart": "night", "season": "autumn", "seed": "rain_sleep_window-night_autumn", "palette_id": "moon_rain", "visualizer_id": "monochrome_rain"},
+        {"id": "dawn_spring", "daypart": "dawn", "season": "spring", "seed": "rain_sleep_window-dawn_spring", "palette_id": "window_amber", "visualizer_id": "breathing_orb"}
+      ]
+    },
+    {
+      "id": "thunder_rain_deep_rest",
+      "display_name": "Thunder Rain Deep Rest",
+      "dayparts": ["night", "late_night"],
+      "seasons": ["spring", "autumn", "winter"],
+      "weight": 8,
+      "allowed_visualizers": ["monochrome_rain", "veil_lines", "aurora"],
+      "palette_sets": [
+        {"id": "storm_blue", "colors": ["#050816", "#172554", "#2563EB", "#BFDBFE"]},
+        {"id": "violet_storm", "colors": ["#120A2A", "#2E1065", "#6D28D9", "#DDD6FE"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["rain_heavy_rain", "rain_window"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_howling_wind", "nature_wind", "things_ceiling_fan"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_brown", "noise_white"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_delta_1hz", "binaural_delta_2hz"]},
+        "accent": {"min": 1, "max": 2, "sounds": ["nature_thunder", "things_wind_chimes"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Thunder Rain Deep Rest",
+        "descriptor": "Storm-weighted seeded sleep mix"
+      },
+      "thumbnail_parts": {
+        "title": "Thunder Rain",
+        "subtitle": "Deep rest storm layers"
+      },
+      "tags": ["thunderstorm sleep", "heavy rain", "deep rest", "night storm", "sleep ambience"],
+      "example_variants": [
+        {"id": "night_winter", "daypart": "night", "season": "winter", "seed": "thunder_rain_deep_rest-night_winter", "palette_id": "storm_blue", "visualizer_id": "aurora"},
+        {"id": "late_night_spring", "daypart": "late_night", "season": "spring", "seed": "thunder_rain_deep_rest-late_night_spring", "palette_id": "violet_storm", "visualizer_id": "veil_lines"}
+      ]
+    },
+    {
+      "id": "forest_water_calm",
+      "display_name": "Forest Water Calm",
+      "dayparts": ["dawn", "morning", "afternoon", "evening"],
+      "seasons": ["spring", "summer", "autumn"],
+      "weight": 9,
+      "allowed_visualizers": ["mist_layers", "liquid_ribbons", "particle_drift"],
+      "palette_sets": [
+        {"id": "forest_pool", "colors": ["#0B3D2E", "#2F855A", "#68D391", "#E6FFFA"]},
+        {"id": "moss_stream", "colors": ["#1A2E05", "#4D7C0F", "#84CC16", "#ECFCCB"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_river", "nature_waterfall", "nature_droplets"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_wind_trees", "nature_birds", "nature_jungle", "nature_crickets"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_green", "noise_pink"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_alpha_8hz", "binaural_theta_5hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["nature_owl", "things_wind_chimes", "nature_frog"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Forest Water Calm",
+        "descriptor": "Creekside forest relaxation"
+      },
+      "thumbnail_parts": {
+        "title": "Forest Water Calm",
+        "subtitle": "River, mist, and green quiet"
+      },
+      "tags": ["forest ambience", "river sounds", "waterfall sounds", "calm nature", "study ambience"],
+      "example_variants": [
+        {"id": "morning_summer", "daypart": "morning", "season": "summer", "seed": "forest_water_calm-morning_summer", "palette_id": "forest_pool", "visualizer_id": "mist_layers"},
+        {"id": "evening_autumn", "daypart": "evening", "season": "autumn", "seed": "forest_water_calm-evening_autumn", "palette_id": "moss_stream", "visualizer_id": "particle_drift"}
+      ]
+    },
+    {
+      "id": "ocean_night_drift",
+      "display_name": "Ocean Night Drift",
+      "dayparts": ["evening", "night", "late_night"],
+      "seasons": ["spring", "summer", "autumn"],
+      "weight": 8,
+      "allowed_visualizers": ["mist_layers", "horizon_reflection", "breathing_orb"],
+      "palette_sets": [
+        {"id": "deep_ocean", "colors": ["#031926", "#0A4D68", "#05BFDB", "#DFF6FF"]},
+        {"id": "midnight_tide", "colors": ["#0F172A", "#1D4ED8", "#38BDF8", "#E0F2FE"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_waves", "places_underwater"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_wind", "nature_droplets", "things_bubbles"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_brown", "noise_white"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_theta_5hz", "binaural_delta_2hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["nature_whale", "things_wind_chimes"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Ocean Night Drift",
+        "descriptor": "Moonlit ocean sleep mix"
+      },
+      "thumbnail_parts": {
+        "title": "Ocean Night Drift",
+        "subtitle": "Tidal calm for late hours"
+      },
+      "tags": ["ocean waves", "night ocean", "sleep music", "deep sleep", "sea ambience"],
+      "example_variants": [
+        {"id": "night_summer", "daypart": "night", "season": "summer", "seed": "ocean_night_drift-night_summer", "palette_id": "deep_ocean", "visualizer_id": "horizon_reflection"},
+        {"id": "late_night_autumn", "daypart": "late_night", "season": "autumn", "seed": "ocean_night_drift-late_night_autumn", "palette_id": "midnight_tide", "visualizer_id": "breathing_orb"}
+      ]
+    },
+    {
+      "id": "snow_fire_night",
+      "display_name": "Snow Fire Night",
+      "dayparts": ["evening", "night", "late_night"],
+      "seasons": ["winter"],
+      "weight": 7,
+      "allowed_visualizers": ["ember_drift", "breathing_orb", "radial_rings"],
+      "palette_sets": [
+        {"id": "ember_snow", "colors": ["#1E293B", "#475569", "#FB923C", "#FEF3C7"]},
+        {"id": "frost_fire", "colors": ["#0F172A", "#334155", "#F97316", "#E2E8F0"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_fire", "nature_walk_snow", "nature_wind"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_howling_wind", "things_ceiling_fan", "noise_white"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_white", "noise_pink"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_theta_4hz", "binaural_delta_1hz"]},
+        "accent": {"min": 0, "max": 3, "sounds": ["things_singing_bowl", "nature_cat", "things_clock"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Snow Fire Night",
+        "descriptor": "Winter cabin rest mix"
+      },
+      "thumbnail_parts": {
+        "title": "Snow Fire Night",
+        "subtitle": "Winter warmth and white hush"
+      },
+      "tags": ["winter ambience", "fireplace sounds", "snow sounds", "night cabin", "sleep ambience"],
+      "example_variants": [
+        {"id": "night_winter", "daypart": "night", "season": "winter", "seed": "snow_fire_night-night_winter", "palette_id": "ember_snow", "visualizer_id": "breathing_orb"},
+        {"id": "late_night_winter", "daypart": "late_night", "season": "winter", "seed": "snow_fire_night-late_night_winter", "palette_id": "frost_fire", "visualizer_id": "ember_drift"}
+      ]
+    },
+    {
+      "id": "river_meditation",
+      "display_name": "River Meditation",
+      "dayparts": ["dawn", "morning", "afternoon", "evening"],
+      "seasons": ["spring", "summer", "autumn", "winter"],
+      "weight": 9,
+      "allowed_visualizers": ["horizon_reflection", "breathing_orb", "liquid_ribbons"],
+      "palette_sets": [
+        {"id": "river_jade", "colors": ["#022C22", "#065F46", "#10B981", "#D1FAE5"]},
+        {"id": "river_stone", "colors": ["#1F2937", "#4B5563", "#34D399", "#ECFDF5"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_river", "nature_droplets", "nature_waterfall"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_birds", "nature_wind", "things_bubbles"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_green", "noise_pink"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_alpha_8hz", "binaural_theta_5hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["things_singing_bowl", "things_wind_chimes"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "River Meditation",
+        "descriptor": "Flow-state water meditation"
+      },
+      "thumbnail_parts": {
+        "title": "River Meditation",
+        "subtitle": "Flowing water and mindful stillness"
+      },
+      "tags": ["meditation music", "river sounds", "relaxation", "mindfulness", "calm ambience"],
+      "example_variants": [
+        {"id": "dawn_spring", "daypart": "dawn", "season": "spring", "seed": "river_meditation-dawn_spring", "palette_id": "river_jade", "visualizer_id": "breathing_orb"},
+        {"id": "afternoon_summer", "daypart": "afternoon", "season": "summer", "seed": "river_meditation-afternoon_summer", "palette_id": "river_stone", "visualizer_id": "horizon_reflection"}
+      ]
+    },
+    {
+      "id": "library_focus_rain",
+      "display_name": "Library Focus Rain",
+      "dayparts": ["morning", "afternoon", "evening"],
+      "seasons": ["spring", "autumn", "winter"],
+      "weight": 8,
+      "allowed_visualizers": ["monochrome_rain", "veil_lines", "constellation"],
+      "palette_sets": [
+        {"id": "paper_lamp", "colors": ["#3F2E1F", "#7C5C3B", "#C18F59", "#FDE68A"]},
+        {"id": "shelf_rain", "colors": ["#111827", "#374151", "#60A5FA", "#E5E7EB"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["places_library", "rain_window"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["things_boiling_water", "things_ceiling_fan", "noise_pink"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_pink", "noise_brown"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_focus_10hz", "binaural_alpha_8hz"]},
+        "accent": {"min": 1, "max": 3, "sounds": ["things_keyboard", "things_typewriter", "things_clock"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Library Focus Rain",
+        "descriptor": "Quiet study room with rain"
+      },
+      "thumbnail_parts": {
+        "title": "Library Focus Rain",
+        "subtitle": "Pages, rain, and soft clockwork"
+      },
+      "tags": ["study ambience", "library sounds", "rain for focus", "deep focus", "work ambience"],
+      "example_variants": [
+        {"id": "morning_autumn", "daypart": "morning", "season": "autumn", "seed": "library_focus_rain-morning_autumn", "palette_id": "paper_lamp", "visualizer_id": "constellation"},
+        {"id": "evening_winter", "daypart": "evening", "season": "winter", "seed": "library_focus_rain-evening_winter", "palette_id": "shelf_rain", "visualizer_id": "veil_lines"}
+      ]
+    },
+    {
+      "id": "cafe_focus_evening",
+      "display_name": "Cafe Focus Evening",
+      "dayparts": ["afternoon", "evening", "night"],
+      "seasons": ["spring", "summer", "autumn", "winter"],
+      "weight": 7,
+      "allowed_visualizers": ["particle_equalizer", "particle_drift", "constellation"],
+      "palette_sets": [
+        {"id": "espresso_glow", "colors": ["#2D1B0E", "#7C3E12", "#D97706", "#FDE68A"]},
+        {"id": "street_reflection", "colors": ["#111827", "#1D4ED8", "#38BDF8", "#F8FAFC"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["places_cafe", "rain_umbrella"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["things_boiling_water", "things_bubbles", "things_ceiling_fan"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_pink", "noise_brown"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_focus_10hz", "binaural_alpha_8hz"]},
+        "accent": {"min": 1, "max": 2, "sounds": ["things_keyboard", "things_wind_chimes"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Cafe Focus Evening",
+        "descriptor": "Evening cafe work session"
+      },
+      "thumbnail_parts": {
+        "title": "Cafe Focus Evening",
+        "subtitle": "Warm chatter and rain-lit focus"
+      },
+      "tags": ["cafe ambience", "focus music", "study with rain", "work sounds", "cozy ambience"],
+      "example_variants": [
+        {"id": "evening_autumn", "daypart": "evening", "season": "autumn", "seed": "cafe_focus_evening-evening_autumn", "palette_id": "espresso_glow", "visualizer_id": "particle_equalizer"},
+        {"id": "afternoon_summer", "daypart": "afternoon", "season": "summer", "seed": "cafe_focus_evening-afternoon_summer", "palette_id": "street_reflection", "visualizer_id": "constellation"}
+      ]
+    },
+    {
+      "id": "train_night_journey",
+      "display_name": "Train Night Journey",
+      "dayparts": ["dawn", "evening", "night", "late_night"],
+      "seasons": ["spring", "summer", "autumn", "winter"],
+      "weight": 7,
+      "allowed_visualizers": ["veil_lines", "radial_rings", "particle_equalizer"],
+      "palette_sets": [
+        {"id": "rail_neon", "colors": ["#0F172A", "#4338CA", "#22D3EE", "#E0F2FE"]},
+        {"id": "compartment_gold", "colors": ["#1F2937", "#4B5563", "#D97706", "#FEF3C7"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["places_train", "rain_car_roof"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_wind", "noise_brown", "places_plane"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_brown", "noise_white"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_theta_5hz", "binaural_alpha_8hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["things_clock", "things_typewriter"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Train Night Journey",
+        "descriptor": "Rolling overnight travel ambience"
+      },
+      "thumbnail_parts": {
+        "title": "Train Night Journey",
+        "subtitle": "Window rain and rhythm tracks"
+      },
+      "tags": ["train ambience", "night journey", "travel sleep", "rain train", "study ambience"],
+      "example_variants": [
+        {"id": "night_winter", "daypart": "night", "season": "winter", "seed": "train_night_journey-night_winter", "palette_id": "rail_neon", "visualizer_id": "radial_rings"},
+        {"id": "dawn_spring", "daypart": "dawn", "season": "spring", "seed": "train_night_journey-dawn_spring", "palette_id": "compartment_gold", "visualizer_id": "particle_equalizer"}
+      ]
+    },
+    {
+      "id": "underwater_dreamscape",
+      "display_name": "Underwater Dreamscape",
+      "dayparts": ["dawn", "night", "late_night"],
+      "seasons": ["spring", "summer", "winter"],
+      "weight": 6,
+      "allowed_visualizers": ["mist_layers", "horizon_reflection", "ink_diffusion"],
+      "palette_sets": [
+        {"id": "abyss_glow", "colors": ["#041C32", "#064663", "#0AA1DD", "#DAFFFB"]},
+        {"id": "deep_lagoon", "colors": ["#082032", "#2C394B", "#00A896", "#B8F2E6"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["places_underwater", "nature_waves"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["things_bubbles", "nature_droplets", "nature_wind"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_green", "noise_brown"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_theta_5hz", "binaural_delta_2hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["nature_whale", "things_singing_bowl"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Underwater Dreamscape",
+        "descriptor": "Submerged sleep textures"
+      },
+      "thumbnail_parts": {
+        "title": "Underwater Dreamscape",
+        "subtitle": "Blue drift and deep quiet"
+      },
+      "tags": ["underwater ambience", "dreamscape", "ocean sleep", "meditation", "sleep ambience"],
+      "example_variants": [
+        {"id": "late_night_summer", "daypart": "late_night", "season": "summer", "seed": "underwater_dreamscape-late_night_summer", "palette_id": "abyss_glow", "visualizer_id": "ink_diffusion"},
+        {"id": "dawn_winter", "daypart": "dawn", "season": "winter", "seed": "underwater_dreamscape-dawn_winter", "palette_id": "deep_lagoon", "visualizer_id": "horizon_reflection"}
+      ]
+    },
+    {
+      "id": "fireplace_reading_room",
+      "display_name": "Fireplace Reading Room",
+      "dayparts": ["evening", "night", "late_night"],
+      "seasons": ["autumn", "winter"],
+      "weight": 8,
+      "allowed_visualizers": ["ember_drift", "breathing_orb", "veil_lines", "smolder"],
+      "palette_sets": [
+        {"id": "oak_ember", "colors": ["#1C1917", "#57534E", "#C2410C", "#FED7AA"]},
+        {"id": "lamp_gold", "colors": ["#2D1B0E", "#6B4F2A", "#D97706", "#FEF3C7"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_fire", "places_library", "rain_window"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["things_ceiling_fan", "things_boiling_water", "noise_pink"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_pink", "noise_brown"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_alpha_8hz", "binaural_theta_4hz"]},
+        "accent": {"min": 1, "max": 3, "sounds": ["things_clock", "nature_cat", "things_singing_bowl"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Fireplace Reading Room",
+        "descriptor": "Warm stacks, rain glass, and low ember focus"
+      },
+      "thumbnail_parts": {
+        "title": "Fireplace Reading Room",
+        "subtitle": "Library hush with ember glow"
+      },
+      "tags": ["fireplace ambience", "reading room", "library sleep", "cozy study", "winter ambience"],
+      "example_variants": [
+        {"id": "evening_autumn", "daypart": "evening", "season": "autumn", "seed": "fireplace_reading_room-evening_autumn", "palette_id": "oak_ember", "visualizer_id": "ember_drift"},
+        {"id": "late_night_winter", "daypart": "late_night", "season": "winter", "seed": "fireplace_reading_room-late_night_winter", "palette_id": "lamp_gold", "visualizer_id": "breathing_orb"}
+      ]
+    },
+    {
+      "id": "monsoon_study_desk",
+      "display_name": "Monsoon Study Desk",
+      "dayparts": ["morning", "afternoon", "evening"],
+      "seasons": ["spring", "summer", "autumn"],
+      "weight": 8,
+      "allowed_visualizers": ["monochrome_rain", "veil_lines", "constellation"],
+      "palette_sets": [
+        {"id": "slate_rain", "colors": ["#111827", "#334155", "#3B82F6", "#DBEAFE"]},
+        {"id": "monsoon_tea", "colors": ["#1F2937", "#4B5563", "#A16207", "#FDE68A"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["rain_window", "rain_heavy_rain", "places_office"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["things_ceiling_fan", "things_boiling_water", "noise_pink"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_pink", "noise_brown"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_focus_10hz", "binaural_alpha_8hz"]},
+        "accent": {"min": 1, "max": 3, "sounds": ["things_keyboard", "things_clock", "nature_thunder"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Monsoon Study Desk",
+        "descriptor": "Rain-loaded deep work with steady room tone"
+      },
+      "thumbnail_parts": {
+        "title": "Monsoon Study Desk",
+        "subtitle": "Focus through the storm"
+      },
+      "tags": ["monsoon ambience", "study desk", "rain focus", "deep work", "office ambience"],
+      "example_variants": [
+        {"id": "afternoon_summer", "daypart": "afternoon", "season": "summer", "seed": "monsoon_study_desk-afternoon_summer", "palette_id": "slate_rain", "visualizer_id": "monochrome_rain"},
+        {"id": "evening_spring", "daypart": "evening", "season": "spring", "seed": "monsoon_study_desk-evening_spring", "palette_id": "monsoon_tea", "visualizer_id": "constellation"}
+      ]
+    },
+    {
+      "id": "summer_cricket_garden",
+      "display_name": "Summer Cricket Garden",
+      "dayparts": ["evening", "night", "late_night", "dawn"],
+      "seasons": ["summer"],
+      "weight": 7,
+      "allowed_visualizers": ["mist_layers", "particle_drift", "constellation"],
+      "palette_sets": [
+        {"id": "garden_lantern", "colors": ["#102A13", "#2F5233", "#F59E0B", "#FEF3C7"]},
+        {"id": "humid_twilight", "colors": ["#111827", "#065F46", "#34D399", "#D1FAE5"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_crickets", "nature_wind_trees", "nature_frog"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_birds", "nature_droplets", "rain_light_rain"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_green", "noise_brown"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_theta_5hz", "binaural_alpha_8hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["nature_owl", "things_wind_chimes"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Summer Cricket Garden",
+        "descriptor": "Warm-night garden insects and leaf motion"
+      },
+      "thumbnail_parts": {
+        "title": "Summer Cricket Garden",
+        "subtitle": "Night garden with soft lantern air"
+      },
+      "tags": ["summer night", "crickets", "garden ambience", "sleep sounds", "warm evening"],
+      "example_variants": [
+        {"id": "night_summer", "daypart": "night", "season": "summer", "seed": "summer_cricket_garden-night_summer", "palette_id": "garden_lantern", "visualizer_id": "particle_drift"},
+        {"id": "dawn_summer", "daypart": "dawn", "season": "summer", "seed": "summer_cricket_garden-dawn_summer", "palette_id": "humid_twilight", "visualizer_id": "constellation"}
+      ]
+    },
+    {
+      "id": "alpine_wind_sleep",
+      "display_name": "Alpine Wind Sleep",
+      "dayparts": ["evening", "night", "late_night"],
+      "seasons": ["winter"],
+      "weight": 7,
+      "allowed_visualizers": ["mist_layers", "breathing_orb", "radial_rings"],
+      "palette_sets": [
+        {"id": "glacier_blue", "colors": ["#0F172A", "#1E3A8A", "#7DD3FC", "#E0F2FE"]},
+        {"id": "ice_silver", "colors": ["#1E293B", "#475569", "#CBD5E1", "#F8FAFC"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_howling_wind", "nature_walk_snow", "nature_wind"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_fire", "things_ceiling_fan", "rain_window"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_white", "noise_brown"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_theta_4hz", "binaural_delta_1hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["things_singing_bowl", "things_wind_chimes"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Alpine Wind Sleep",
+        "descriptor": "High-mountain wind and snow-muted rest"
+      },
+      "thumbnail_parts": {
+        "title": "Alpine Wind Sleep",
+        "subtitle": "Cold air, white noise, deep rest"
+      },
+      "tags": ["alpine ambience", "wind sleep", "winter sleep", "snow sounds", "deep rest"],
+      "example_variants": [
+        {"id": "night_winter", "daypart": "night", "season": "winter", "seed": "alpine_wind_sleep-night_winter", "palette_id": "glacier_blue", "visualizer_id": "mist_layers"},
+        {"id": "late_night_winter", "daypart": "late_night", "season": "winter", "seed": "alpine_wind_sleep-late_night_winter", "palette_id": "ice_silver", "visualizer_id": "breathing_orb"}
+      ]
+    },
+    {
+      "id": "office_focus_hum",
+      "display_name": "Office Focus Hum",
+      "dayparts": ["morning", "afternoon", "evening"],
+      "seasons": ["spring", "summer", "autumn", "winter"],
+      "weight": 8,
+      "allowed_visualizers": ["veil_lines", "constellation", "particle_equalizer"],
+      "palette_sets": [
+        {"id": "graphite_blue", "colors": ["#111827", "#1F2937", "#2563EB", "#DBEAFE"]},
+        {"id": "fluoro_amber", "colors": ["#27272A", "#52525B", "#F59E0B", "#FEF3C7"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["places_office", "things_ceiling_fan", "rain_window"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["noise_pink", "things_boiling_water", "places_library"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_pink", "noise_white"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_focus_10hz", "binaural_alpha_8hz"]},
+        "accent": {"min": 1, "max": 3, "sounds": ["things_keyboard", "things_typewriter", "things_clock"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Office Focus Hum",
+        "descriptor": "Low HVAC room tone with work-session detail"
+      },
+      "thumbnail_parts": {
+        "title": "Office Focus Hum",
+        "subtitle": "Steady room tone for work blocks"
+      },
+      "tags": ["office ambience", "focus sounds", "study room", "deep work", "keyboard ambience"],
+      "example_variants": [
+        {"id": "morning_winter", "daypart": "morning", "season": "winter", "seed": "office_focus_hum-morning_winter", "palette_id": "graphite_blue", "visualizer_id": "constellation"},
+        {"id": "afternoon_summer", "daypart": "afternoon", "season": "summer", "seed": "office_focus_hum-afternoon_summer", "palette_id": "fluoro_amber", "visualizer_id": "particle_equalizer"}
+      ]
+    },
+    {
+      "id": "plane_cabin_drift",
+      "display_name": "Plane Cabin Drift",
+      "dayparts": ["dawn", "evening", "night", "late_night"],
+      "seasons": ["spring", "summer", "autumn", "winter"],
+      "weight": 6,
+      "allowed_visualizers": ["particle_equalizer", "radial_rings", "breathing_orb"],
+      "palette_sets": [
+        {"id": "runway_blue", "colors": ["#0F172A", "#1D4ED8", "#38BDF8", "#E0F2FE"]},
+        {"id": "cabin_dim", "colors": ["#111827", "#374151", "#A3A3A3", "#F3F4F6"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["places_plane", "nature_wind", "things_ceiling_fan"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["rain_car_roof", "noise_brown", "places_train"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_brown", "noise_white"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_theta_5hz", "binaural_delta_2hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["things_singing_bowl", "things_clock"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Plane Cabin Drift",
+        "descriptor": "Cruise-altitude hum for long sleep blocks"
+      },
+      "thumbnail_parts": {
+        "title": "Plane Cabin Drift",
+        "subtitle": "Cabin hush and cloud-level calm"
+      },
+      "tags": ["plane ambience", "travel sleep", "cabin noise", "brown noise", "long haul sleep"],
+      "example_variants": [
+        {"id": "night_autumn", "daypart": "night", "season": "autumn", "seed": "plane_cabin_drift-night_autumn", "palette_id": "runway_blue", "visualizer_id": "radial_rings"},
+        {"id": "dawn_spring", "daypart": "dawn", "season": "spring", "seed": "plane_cabin_drift-dawn_spring", "palette_id": "cabin_dim", "visualizer_id": "breathing_orb"}
+      ]
+    },
+    {
+      "id": "jungle_rain_retreat",
+      "display_name": "Jungle Rain Retreat",
+      "dayparts": ["dawn", "morning", "evening", "night"],
+      "seasons": ["spring", "summer", "autumn"],
+      "weight": 8,
+      "allowed_visualizers": ["mist_layers", "particle_drift", "liquid_ribbons"],
+      "palette_sets": [
+        {"id": "canopy_rain", "colors": ["#052E16", "#166534", "#22C55E", "#DCFCE7"]},
+        {"id": "orchid_mist", "colors": ["#1F2937", "#14532D", "#4ADE80", "#ECFCCB"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_jungle", "rain_light_rain", "nature_droplets"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_waterfall", "nature_frog", "nature_birds"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_green", "noise_pink"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_theta_5hz", "binaural_alpha_8hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["nature_owl", "things_wind_chimes"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Jungle Rain Retreat",
+        "descriptor": "Dense canopy rain with lush wildlife motion"
+      },
+      "thumbnail_parts": {
+        "title": "Jungle Rain Retreat",
+        "subtitle": "Rain under the canopy"
+      },
+      "tags": ["jungle ambience", "rainforest sounds", "tropical rain", "nature retreat", "sleep ambience"],
+      "example_variants": [
+        {"id": "morning_summer", "daypart": "morning", "season": "summer", "seed": "jungle_rain_retreat-morning_summer", "palette_id": "canopy_rain", "visualizer_id": "liquid_ribbons"},
+        {"id": "night_autumn", "daypart": "night", "season": "autumn", "seed": "jungle_rain_retreat-night_autumn", "palette_id": "orchid_mist", "visualizer_id": "mist_layers"}
+      ]
+    },
+    {
+      "id": "autumn_leaf_walk",
+      "display_name": "Autumn Leaf Walk",
+      "dayparts": ["dawn", "morning", "evening"],
+      "seasons": ["autumn"],
+      "weight": 7,
+      "allowed_visualizers": ["mist_layers", "particle_drift", "constellation"],
+      "palette_sets": [
+        {"id": "maple_gold", "colors": ["#3F1D0B", "#92400E", "#F59E0B", "#FEF3C7"]},
+        {"id": "smoke_orchard", "colors": ["#1C1917", "#44403C", "#B45309", "#FED7AA"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_walk_leaves", "nature_wind_trees", "nature_river"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_birds", "nature_wind", "rain_light_rain"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_green", "noise_brown"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_alpha_8hz", "binaural_theta_5hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["nature_owl", "things_wind_chimes"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Autumn Leaf Walk",
+        "descriptor": "Dry leaves, cool air, and slow woodland footing"
+      },
+      "thumbnail_parts": {
+        "title": "Autumn Leaf Walk",
+        "subtitle": "Forest trail in amber air"
+      },
+      "tags": ["autumn ambience", "leaf sounds", "forest walk", "fall focus", "nature trail"],
+      "example_variants": [
+        {"id": "morning_autumn", "daypart": "morning", "season": "autumn", "seed": "autumn_leaf_walk-morning_autumn", "palette_id": "maple_gold", "visualizer_id": "particle_drift"},
+        {"id": "evening_autumn", "daypart": "evening", "season": "autumn", "seed": "autumn_leaf_walk-evening_autumn", "palette_id": "smoke_orchard", "visualizer_id": "mist_layers"}
+      ]
+    },
+    {
+      "id": "dawn_birdsong_focus",
+      "display_name": "Dawn Birdsong Focus",
+      "dayparts": ["dawn", "morning"],
+      "seasons": ["spring", "summer", "autumn"],
+      "weight": 8,
+      "allowed_visualizers": ["mist_layers", "constellation", "breathing_orb"],
+      "palette_sets": [
+        {"id": "sunwash_green", "colors": ["#14532D", "#16A34A", "#FACC15", "#FEF9C3"]},
+        {"id": "mist_gold", "colors": ["#1F2937", "#4B5563", "#F59E0B", "#FDE68A"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_birds", "nature_river", "nature_wind_trees"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_droplets", "things_bubbles", "noise_green"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_green", "noise_pink"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_alpha_8hz", "binaural_focus_10hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["things_singing_bowl", "things_wind_chimes"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Dawn Birdsong Focus",
+        "descriptor": "First-light birds and river air for clear work"
+      },
+      "thumbnail_parts": {
+        "title": "Dawn Birdsong Focus",
+        "subtitle": "Early light and green concentration"
+      },
+      "tags": ["birdsong", "morning focus", "dawn ambience", "study nature", "spring morning"],
+      "example_variants": [
+        {"id": "dawn_spring", "daypart": "dawn", "season": "spring", "seed": "dawn_birdsong_focus-dawn_spring", "palette_id": "sunwash_green", "visualizer_id": "constellation"},
+        {"id": "morning_summer", "daypart": "morning", "season": "summer", "seed": "dawn_birdsong_focus-morning_summer", "palette_id": "mist_gold", "visualizer_id": "breathing_orb"}
+      ]
+    },
+    {
+      "id": "storm_train_window",
+      "display_name": "Storm Train Window",
+      "dayparts": ["evening", "night", "late_night"],
+      "seasons": ["spring", "autumn", "winter"],
+      "weight": 8,
+      "allowed_visualizers": ["monochrome_rain", "veil_lines", "radial_rings"],
+      "palette_sets": [
+        {"id": "signal_blue", "colors": ["#020617", "#1E3A8A", "#3B82F6", "#DBEAFE"]},
+        {"id": "platform_amber", "colors": ["#1F2937", "#4B5563", "#D97706", "#FEF3C7"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["places_train", "rain_window", "rain_car_roof"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_howling_wind", "things_ceiling_fan", "noise_brown"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_brown", "noise_white"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_delta_2hz", "binaural_theta_4hz"]},
+        "accent": {"min": 1, "max": 2, "sounds": ["nature_thunder", "things_clock"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Storm Train Window",
+        "descriptor": "Rolling tracks under a hard night storm"
+      },
+      "thumbnail_parts": {
+        "title": "Storm Train Window",
+        "subtitle": "Tracks, rain, and thunder flashes"
+      },
+      "tags": ["storm train", "night train", "thunder rain", "travel sleep", "window ambience"],
+      "example_variants": [
+        {"id": "night_winter", "daypart": "night", "season": "winter", "seed": "storm_train_window-night_winter", "palette_id": "signal_blue", "visualizer_id": "monochrome_rain"},
+        {"id": "late_night_autumn", "daypart": "late_night", "season": "autumn", "seed": "storm_train_window-late_night_autumn", "palette_id": "platform_amber", "visualizer_id": "radial_rings"}
+      ]
+    },
+    {
+      "id": "moonlit_fire_meditation",
+      "display_name": "Moonlit Fire Meditation",
+      "dayparts": ["evening", "night", "late_night"],
+      "seasons": ["autumn", "winter"],
+      "weight": 7,
+      "allowed_visualizers": ["ember_drift", "breathing_orb", "horizon_reflection"],
+      "palette_sets": [
+        {"id": "moon_ember", "colors": ["#0F172A", "#334155", "#F97316", "#FFE4B5"]},
+        {"id": "ash_gold", "colors": ["#1C1917", "#57534E", "#D97706", "#FDE68A"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_fire", "nature_wind", "rain_window"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["noise_brown", "things_ceiling_fan", "nature_droplets"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_brown", "noise_white"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_theta_4hz", "binaural_delta_2hz"]},
+        "accent": {"min": 1, "max": 3, "sounds": ["things_singing_bowl", "things_wind_chimes", "nature_cat"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Moonlit Fire Meditation",
+        "descriptor": "Open-window embers with slow ceremonial accents"
+      },
+      "thumbnail_parts": {
+        "title": "Moonlit Fire Meditation",
+        "subtitle": "Warm embers under cool night air"
+      },
+      "tags": ["fire meditation", "night meditation", "ember ambience", "sleep ritual", "cozy night"],
+      "example_variants": [
+        {"id": "evening_winter", "daypart": "evening", "season": "winter", "seed": "moonlit_fire_meditation-evening_winter", "palette_id": "moon_ember", "visualizer_id": "breathing_orb"},
+        {"id": "late_night_autumn", "daypart": "late_night", "season": "autumn", "seed": "moonlit_fire_meditation-late_night_autumn", "palette_id": "ash_gold", "visualizer_id": "ember_drift"}
+      ]
+    },
+    {
+      "id": "coastal_fog_morning",
+      "display_name": "Coastal Fog Morning",
+      "dayparts": ["dawn", "morning", "afternoon"],
+      "seasons": ["spring", "summer", "autumn"],
+      "weight": 7,
+      "allowed_visualizers": ["mist_layers", "horizon_reflection", "breathing_orb"],
+      "palette_sets": [
+        {"id": "fog_sky", "colors": ["#0F172A", "#475569", "#7DD3FC", "#F8FAFC"]},
+        {"id": "sea_glass", "colors": ["#082F49", "#0F766E", "#5EEAD4", "#ECFEFF"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["nature_waves", "nature_wind", "places_underwater"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_birds", "nature_droplets", "things_bubbles"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_green", "noise_white"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_alpha_8hz", "binaural_theta_5hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["nature_whale", "things_wind_chimes"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Coastal Fog Morning",
+        "descriptor": "Muted surf, pale sky, and sea-air softness"
+      },
+      "thumbnail_parts": {
+        "title": "Coastal Fog Morning",
+        "subtitle": "Cool surf in soft morning haze"
+      },
+      "tags": ["coastal ambience", "fog morning", "ocean focus", "sea breeze", "morning calm"],
+      "example_variants": [
+        {"id": "dawn_spring", "daypart": "dawn", "season": "spring", "seed": "coastal_fog_morning-dawn_spring", "palette_id": "fog_sky", "visualizer_id": "mist_layers"},
+        {"id": "morning_summer", "daypart": "morning", "season": "summer", "seed": "coastal_fog_morning-morning_summer", "palette_id": "sea_glass", "visualizer_id": "breathing_orb"}
+      ]
+    },
+    {
+      "id": "whale_blue_meditation",
+      "display_name": "Whale Blue Meditation",
+      "dayparts": ["dawn", "night", "late_night"],
+      "seasons": ["spring", "summer", "winter"],
+      "weight": 6,
+      "allowed_visualizers": ["horizon_reflection", "mist_layers", "ink_diffusion"],
+      "palette_sets": [
+        {"id": "pelagic_blue", "colors": ["#082F49", "#0C4A6E", "#38BDF8", "#E0F2FE"]},
+        {"id": "deep_teal", "colors": ["#042F2E", "#115E59", "#2DD4BF", "#CCFBF1"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["places_underwater", "nature_waves", "things_bubbles"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["nature_droplets", "nature_wind", "noise_green"]},
+        "noise": {"min": 0, "max": 1, "sounds": ["noise_green", "noise_brown"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_theta_5hz", "binaural_delta_2hz"]},
+        "accent": {"min": 1, "max": 2, "sounds": ["nature_whale", "things_singing_bowl"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Whale Blue Meditation",
+        "descriptor": "Slow blue-water drift with distant whale calls"
+      },
+      "thumbnail_parts": {
+        "title": "Whale Blue Meditation",
+        "subtitle": "Open water and meditative depth"
+      },
+      "tags": ["whale sounds", "ocean meditation", "underwater ambience", "deep calm", "sleep meditation"],
+      "example_variants": [
+        {"id": "late_night_summer", "daypart": "late_night", "season": "summer", "seed": "whale_blue_meditation-late_night_summer", "palette_id": "pelagic_blue", "visualizer_id": "ink_diffusion"},
+        {"id": "dawn_winter", "daypart": "dawn", "season": "winter", "seed": "whale_blue_meditation-dawn_winter", "palette_id": "deep_teal", "visualizer_id": "horizon_reflection"}
+      ]
+    },
+    {
+      "id": "deep_brown_sleep",
+      "display_name": "Deep Brown Sleep",
+      "dayparts": ["night", "late_night", "dawn"],
+      "seasons": ["spring", "summer", "autumn", "winter"],
+      "weight": 9,
+      "allowed_visualizers": ["veil_lines", "breathing_orb", "radial_rings"],
+      "palette_sets": [
+        {"id": "midnight_sand", "colors": ["#111827", "#374151", "#A16207", "#FDE68A"]},
+        {"id": "quiet_slate", "colors": ["#020617", "#334155", "#64748B", "#E2E8F0"]}
+      ],
+      "layers": {
+        "bed": {"min": 1, "max": 2, "sounds": ["things_ceiling_fan", "rain_light_rain", "nature_wind"]},
+        "secondary": {"min": 1, "max": 2, "sounds": ["rain_window", "places_plane", "things_boiling_water"]},
+        "noise": {"min": 1, "max": 1, "sounds": ["noise_brown", "noise_white"]},
+        "binaural": {"min": 0, "max": 1, "sounds": ["binaural_delta_1hz", "binaural_delta_2hz"]},
+        "accent": {"min": 0, "max": 2, "sounds": ["nature_cat", "things_clock"]}
+      },
+      "title_parts": {
+        "channel_prefix": "Symphony.Station",
+        "headline": "Deep Brown Sleep",
+        "descriptor": "Heavy masking layers tuned for uninterrupted rest"
+      },
+      "thumbnail_parts": {
+        "title": "Deep Brown Sleep",
+        "subtitle": "Dense brown-noise sleep shield"
+      },
+      "tags": ["brown noise", "deep sleep", "fan sounds", "noise masking", "sleep aid"],
+      "example_variants": [
+        {"id": "late_night_winter", "daypart": "late_night", "season": "winter", "seed": "deep_brown_sleep-late_night_winter", "palette_id": "midnight_sand", "visualizer_id": "breathing_orb"},
+        {"id": "dawn_summer", "daypart": "dawn", "season": "summer", "seed": "deep_brown_sleep-dawn_summer", "palette_id": "quiet_slate", "visualizer_id": "radial_rings"}
+      ]
+    }
+  ]
+}
