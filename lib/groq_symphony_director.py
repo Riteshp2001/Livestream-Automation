@@ -31,6 +31,8 @@ import time
 import requests
 from dotenv import load_dotenv
 
+from lib.groq_json import parse_groq_json
+
 load_dotenv()
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -246,9 +248,7 @@ def get_groq_symphony_decision(
             response.raise_for_status()
             payload = response.json()
             raw_content = payload["choices"][0]["message"]["content"].strip()
-            # Strip markdown fences if Groq adds them
-            raw_content = raw_content.replace("```json", "").replace("```", "").strip()
-            decision_raw = json.loads(raw_content, strict=False)
+            decision_raw = parse_groq_json(raw_content)
             decision = _validate_decision(decision_raw, profiles_data, visualizer_ids)
             print(
                 f"[GroqDirector] ✅ Decision: profile={decision['profile_id']} | "

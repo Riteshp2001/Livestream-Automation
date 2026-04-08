@@ -160,6 +160,7 @@ class LiveAudioSwitcher:
         self._profiles_data = profiles_data
         self._work_dir      = Path(work_dir)
         self._work_dir.mkdir(parents=True, exist_ok=True)
+        self._work_dir      = self._work_dir.resolve()
 
         self._playlist_path = self._work_dir / "playlist.txt"
         self._switch_queue: queue.Queue[str] = queue.Queue(maxsize=1)
@@ -240,8 +241,9 @@ class LiveAudioSwitcher:
 
     def _append_to_playlist(self, seg_path: Path) -> None:
         """Append a new segment to the concat playlist (ffmpeg reads it live)."""
-        # ffmpeg concat demuxer requires forward-slash paths and single quotes
-        posix_path = seg_path.as_posix()
+        # Concat entries must be absolute, otherwise ffmpeg resolves them relative
+        # to playlist.txt and can duplicate path prefixes for nested work dirs.
+        posix_path = seg_path.resolve().as_posix()
         with self._playlist_path.open("a", encoding="utf-8") as f:
             f.write(f"file '{posix_path}'\n")
 

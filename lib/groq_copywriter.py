@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import os
-import re
 
 import requests
 from dotenv import load_dotenv
+
+from lib.groq_json import parse_groq_json
 
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -114,17 +115,7 @@ def generate_stream_copy(plan, fallback_metadata, preview=False):
         response.raise_for_status()
         payload = response.json()
         content = payload["choices"][0]["message"]["content"]
-
-        # Strip markdown fences if Groq adds them
-        content = content.replace("```json", "").replace("```", "").strip()
-
-        # Fix invalid JSON escape sequences (e.g. \s \D \w \e that Groq sometimes
-        # writes in description text). json.loads strict=False does NOT fix these.
-        # Valid JSON escapes after \ are: " \ / b f n r t u
-        # Anything else gets its backslash doubled to become a safe literal \.
-        content = re.sub(r'\\(?!["\\\'/bfnrtu])', r'\\\\', content)
-
-        parsed = json.loads(content, strict=False)
+        parsed = parse_groq_json(content)
 
     except requests.HTTPError as exc:
         print(f"[GroqCopy] HTTP error from Groq API: {exc} — using fallback metadata.")
