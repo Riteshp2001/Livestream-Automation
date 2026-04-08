@@ -395,7 +395,19 @@ def start_live_generated_stream(
     archive_path=None,
     display_duration_seconds=None,
     plan=None,
+    youtube_service=None,
+    live_chat_id=None,
 ):
+    """
+    Start a live generated stream with segment-based audio switching.
+
+    If youtube_service + live_chat_id are provided, a LivePollScheduler will
+    run alongside the stream, posting community polls every 10 minutes and
+    hot-swapping the audio profile based on viewer votes.
+    """
+    from lib.live_audio_switcher import LiveAudioSwitcher, LivePollScheduler
+    from lib.stream_generation import load_sound_catalog, load_livestream_profiles
+
     plan = plan or resolve_stream_plan(duration_seconds=duration_seconds, render_mode="live")
     metadata = build_stream_metadata(
         plan,
@@ -404,25 +416,64 @@ def start_live_generated_stream(
     )
     LIVE_RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=LIVE_RUNTIME_DIR) as tmpdir:
-        audio_path = _mix_audio_layers(plan["layers"], Path(tmpdir) / "audio.mp3", plan["duration_seconds"])
-        _write_json(Path(tmpdir) / "mix.json", plan)
-        _write_json(Path(tmpdir) / "manifest.json", metadata)
+        tmpdir_path = Path(tmpdir)
+        seg_dir     = tmpdir_path / "segments"
+        seg_dir.mkdir(parents=True, exist_ok=True)
+
+        # ── Segment-based audio switcher ─────────────────────────────────────
+        sound_catalog  = load_sound_catalog()
+        profiles_data  = load_livestream_profiles()
+        switcher = LiveAudioSwitcher(
+            initial_plan   = plan,
+            sound_catalog  = sound_catalog,
+            profiles_data  = profiles_data,
+            work_dir       = seg_dir,
+        )
+        playlist_path = switcher.start()   # begins pre-rendering segments
+
+        _write_json(tmpdir_path / "mix.json",      plan)
+        _write_json(tmpdir_path / "manifest.json", metadata)
+
         xvfb = XvfbSession().start()
         display = xvfb.display
         original_display = os.environ.get("DISPLAY")
         os.environ["DISPLAY"] = display
-        session = None
+
+        session      = None
+        poll_sched   = None
+        exit_code    = None
+
         try:
             session = LiveVisualizerSession(_build_render_config(plan)).start()
+
+            # ── Poll scheduler (if YouTube service wired in) ─────────────────
+            if youtube_service and live_chat_id:
+                poll_sched = LivePollScheduler(
+                    youtube_service    = youtube_service,
+                    live_chat_id       = live_chat_id,
+                    audio_switcher     = switcher,
+                    current_profile_id = plan["profile_id"],
+                ).start()
+            else:
+                print("[LiveStream] No YouTube service/chat ID — poll scheduler disabled.")
+
+            # ── Wait for first two segments to be ready ──────────────────────
+            import time as _time
+            _time.sleep(5)  # segments are pre-rendered in background; give them a moment
+
             exit_code = start_browser_capture_stream(
-                display=display,
-                audio_file=audio_path,
-                rtmp_url=rtmp_url,
-                stream_key=stream_key,
-                duration_seconds=duration_seconds,
-                local_recording_path=archive_path,
+                display              = display,
+                audio_file           = playlist_path,
+                rtmp_url             = rtmp_url,
+                stream_key           = stream_key,
+                duration_seconds     = duration_seconds,
+                local_recording_path = archive_path,
+                audio_is_playlist    = True,
             )
         finally:
+            switcher.stop()
+            if poll_sched:
+                poll_sched.stop()
             if session:
                 session.stop()
             if original_display is None:
@@ -430,4 +481,6 @@ def start_live_generated_stream(
             else:
                 os.environ["DISPLAY"] = original_display
             xvfb.stop()
+
     return {"exit_code": exit_code, "plan": plan, "metadata": metadata}
+

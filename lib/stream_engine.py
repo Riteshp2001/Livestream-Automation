@@ -129,6 +129,7 @@ def start_browser_capture_stream(
     local_recording_path=None,
     width=1920,
     height=1080,
+    audio_is_playlist=False,
 ):
     ffmpeg_binary = get_ffmpeg_binary()
     display_input = display if "+" in display else f"{display}.0+0,0"
@@ -146,48 +147,47 @@ def start_browser_capture_stream(
         "x11grab",
         "-i",
         display_input,
-        "-stream_loop",
-        "-1",
-        "-i",
-        audio_file,
-        "-map",
-        "0:v:0",
-        "-map",
-        "1:a:0",
-        "-c:v",
-        "libx264",
-        "-preset",
-        "veryfast",
-        "-b:v",
-        "4500k",
-        "-maxrate",
-        "4500k",
-        "-bufsize",
-        "9000k",
-        "-pix_fmt",
-        "yuv420p",
-        "-g",
-        "60",
-        "-keyint_min",
-        "60",
-        "-sc_threshold",
-        "0",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "128k",
-        "-ar",
-        "44100",
-        "-t",
-        str(duration_seconds),
     ]
+
+    # Audio input — static looped file OR dynamic concat playlist
+    if audio_is_playlist:
+        cmd.extend([
+            "-f",    "concat",
+            "-safe", "0",
+            "-re",
+            "-i",    audio_file,
+        ])
+    else:
+        cmd.extend([
+            "-stream_loop", "-1",
+            "-i",           audio_file,
+        ])
+
+    cmd.extend([
+        "-map", "0:v:0",
+        "-map", "1:a:0",
+        "-c:v",        "libx264",
+        "-preset",     "veryfast",
+        "-b:v",        "4500k",
+        "-maxrate",    "4500k",
+        "-bufsize",    "9000k",
+        "-pix_fmt",    "yuv420p",
+        "-g",          "60",
+        "-keyint_min", "60",
+        "-sc_threshold", "0",
+        "-c:a", "aac",
+        "-b:a", "128k",
+        "-ar",  "44100",
+        "-t",   str(duration_seconds),
+    ])
     cmd.extend(_stream_output_args(rtmp_url, stream_key, local_recording_path))
 
     print("Starting live browser capture RTMP stream...")
-    print(f"  Display input: {display_input}")
-    print(f"  Audio mix: {audio_file}")
+    print(f"  Display input:  {display_input}")
+    print(f"  Audio source:   {'playlist (switchable)' if audio_is_playlist else 'static loop'}")
+    print(f"  Audio file:     {audio_file}")
     if local_recording_path:
-        print(f"  Local archive: {local_recording_path}")
+        print(f"  Local archive:  {local_recording_path}")
     return _run_ffmpeg_process(cmd, duration_seconds)
 
 

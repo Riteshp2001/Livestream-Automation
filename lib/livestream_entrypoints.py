@@ -326,23 +326,43 @@ def run_livestream_mode():
                     print_status(f"Stream key: {'***' if stream_key else 'MISSING'}")
                     print_status(f"Plan layers: {len(plan.get('layers', []))}")
 
+                    # ── Fetch live chat ID for poll scheduler ─────────────────────
+                    live_chat_id = None
                     try:
-                        from lib.stream_interactions import start_pomodoro_thread, start_chat_polling_thread
+                        bc_info = youtube.liveBroadcasts().list(
+                            part="snippet", id=broadcast_id
+                        ).execute()
+                        items = bc_info.get("items", [])
+                        if items:
+                            live_chat_id = items[0]["snippet"].get("liveChatId")
+                        if live_chat_id:
+                            print_status(f"Live chat ID: {live_chat_id}")
+                            from lib.live_audio_switcher import post_stream_intro_comment
+                            post_stream_intro_comment(youtube, live_chat_id)
+                        else:
+                            print_status("Warning: could not fetch live chat ID — polls disabled")
+                    except Exception as chat_err:
+                        print_status(f"Chat setup error: {chat_err} — polls disabled")
+
+                    # ── Pomodoro + AI DJ overlay threads (still active) ──────────
+                    try:
+                        from lib.stream_interactions import start_pomodoro_thread
                         from lib.ai_dj import start_ai_dj_thread
                         start_pomodoro_thread()
-                        start_chat_polling_thread(broadcast_id, youtube)
                         start_ai_dj_thread()
                         print_status("Overlay threads started")
                     except Exception as mod_err:
                         print_status(f"Could not start interaction overlays: {mod_err}")
 
                     result = start_live_generated_stream(
-                        duration_seconds=int(duration_minutes * 60),
-                        display_duration_seconds=int(duration_minutes * 60),
-                        rtmp_url=rtmp_url,
-                        stream_key=stream_key,
-                        archive_path=archive_path,
-                        plan=plan,
+                        duration_seconds         = int(duration_minutes * 60),
+                        display_duration_seconds = int(duration_minutes * 60),
+                        rtmp_url                 = rtmp_url,
+                        stream_key               = stream_key,
+                        archive_path             = archive_path,
+                        plan                     = plan,
+                        youtube_service          = youtube,
+                        live_chat_id             = live_chat_id,
                     )
 
                     print_status(f"Stream completed successfully: {result}")
