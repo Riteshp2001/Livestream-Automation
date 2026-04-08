@@ -153,6 +153,7 @@ class LiveVisualizerSession:
             headless=False,
             viewport={"width": self.width, "height": self.height},
             no_viewport=True,
+            ignore_default_args=["--enable-automation"],
             args=[
                 f"--window-size={self.width},{self.height}",
                 "--autoplay-policy=no-user-gesture-required",
@@ -174,6 +175,7 @@ class LiveVisualizerSession:
                 "--disable-renderer-backgrounding",
                 "--disable-backgrounding-occluded-windows",
                 "--disable-features=TranslateUI,Infobars,DownloadBubble",
+                "--disable-blink-features=AutomationControlled",
                 "--disable-frame-rate-limit",
                 "--disable-gpu-vsync",
                 "--disable-window-decorations",
